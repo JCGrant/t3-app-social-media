@@ -94,6 +94,15 @@ const UserPage: NextPage = () => {
                 onUpdatePosts={onMutateUser}
               />
             ))}
+          <h2 className="text-xl">Likes</h2>
+          {(user.data.likes ?? [])
+            .map((p) => (
+              <IndividualPost
+                key={p.id}
+                {...p}
+                onUpdatePosts={onMutateUser}
+              />
+            ))}
         </div>
       </div>
     </>

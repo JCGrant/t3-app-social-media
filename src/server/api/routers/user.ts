@@ -15,6 +15,41 @@ export const userRouter = createTRPCRouter({
           id: input.id,
         },
         include: {
+          likes: {
+            orderBy: {
+              createdAt: "desc",
+            },
+            include: {
+              user: true,
+              likes: true,
+              replies: {
+                orderBy: {
+                  createdAt: "desc",
+                },
+              },
+              reposts: {
+                orderBy: {
+                  createdAt: "desc",
+                },
+              },
+              repost: {
+                include: {
+                  user: true,
+                  likes: true,
+                  replies: {
+                    orderBy: {
+                      createdAt: "desc",
+                    },
+                  },
+                  reposts: {
+                    orderBy: {
+                      createdAt: "desc",
+                    },
+                  },
+                },
+              },
+            },
+          },
           followers: true,
           following: true,
           posts: {
