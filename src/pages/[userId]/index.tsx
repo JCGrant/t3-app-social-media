@@ -1,6 +1,8 @@
+import { User } from "@prisma/client";
 import { type NextPage } from "next";
 import { useSession } from "next-auth/react";
 import Head from "next/head";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { api } from "../../utils/api";
@@ -19,6 +21,9 @@ const UserPage: NextPage = () => {
     { enabled: userId !== undefined }
   );
 
+  const iAmFollowing = (user: { followers: User[] }) =>
+    user.followers.some(u => u.id === session.data?.user?.id);
+
   const onMutateUser = {
     onMutate() {
       setTimeout(() => void user.refetch(), 300);
@@ -26,6 +31,9 @@ const UserPage: NextPage = () => {
   };
 
   const createPost = api.posts.create.useMutation(onMutateUser);
+  const followUser = api.users.follow.useMutation(onMutateUser);
+  const unfollowUser = api.users.unfollow.useMutation(onMutateUser);
+
   const [newPostText, setNewPostText] = useState<string | undefined>(undefined);
 
   const onClickPost = (text: string) => {
@@ -56,6 +64,17 @@ const UserPage: NextPage = () => {
           />
           <h1 className="text-3xl">{user.data.name}</h1>
           <span className="text-gray-400">@{user.data.id}</span>
+          {iAmFollowing(user.data) ?
+            <button
+              onClick={() => unfollowUser.mutate({ userId: user.data!.id })}
+            >
+              Unfollow
+            </button> :
+            <button
+              onClick={() => followUser.mutate({ userId: user.data!.id })}
+            >
+              Follow
+            </button>}
         </div>
         <div>
           <h2 className="text-xl">Posts</h2>
@@ -102,6 +121,36 @@ const UserPage: NextPage = () => {
                 {...p}
                 onUpdatePosts={onMutateUser}
               />
+            ))}
+          <h2 className="text-xl">Following</h2>
+          {(user.data.following ?? [])
+            .map((u) => (
+              <div key={u.id}>
+                <Link href={`/${u.id}`}>
+                  {/* eslint-disable-next-line */}
+                  <img
+                    className="inline w-10 rounded-full"
+                    src={u.image ?? ""}
+                    alt="profile picture"
+                  />
+                  <span className="mr-2">{u.name}</span>
+                </Link>
+              </div>
+            ))}
+          <h2 className="text-xl">Followers</h2>
+          {(user.data.followers ?? [])
+            .map((u) => (
+              <div key={u.id}>
+                <Link href={`/${u.id}`}>
+                  {/* eslint-disable-next-line */}
+                  <img
+                    className="inline w-10 rounded-full"
+                    src={u.image ?? ""}
+                    alt="profile picture"
+                  />
+                  <span className="mr-2">{u.name}</span>
+                </Link>
+              </div>
             ))}
         </div>
       </div>
