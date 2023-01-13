@@ -14,7 +14,7 @@ import { env as clientEnv, formatErrors } from "./client.mjs";
  */
 let serverEnv = {};
 Object.keys(serverSchema.shape).forEach(
-  (key) => (serverEnv[key] = process.env[key]),
+  (key) => (serverEnv[key] = process.env[key])
 );
 
 const _serverEnv = serverSchema.safeParse(serverEnv);
@@ -22,7 +22,7 @@ const _serverEnv = serverSchema.safeParse(serverEnv);
 if (!_serverEnv.success) {
   console.error(
     "❌ Invalid environment variables:\n",
-    ...formatErrors(_serverEnv.error.format()),
+    ...formatErrors(_serverEnv.error.format())
   );
   throw new Error("Invalid environment variables");
 }
