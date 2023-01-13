@@ -8,9 +8,6 @@ import { api } from "../../../utils/api";
 
 const PostPage = () => {
   const router = useRouter();
-  const session = useSession();
-
-  const isMe = (userId: string) => session.data?.user?.id === userId;
 
   const postId = router.query.postId;
 
@@ -56,7 +53,6 @@ const PostPage = () => {
         <div>
           <IndividualPost
             {...post.data}
-            isMe={isMe}
             onUpdatePosts={onMutatePost}
           />
           <h2 className="text-xl">Replies</h2>
@@ -64,7 +60,6 @@ const PostPage = () => {
             <IndividualPost
               key={p.id}
               {...p}
-              isMe={isMe}
               onUpdatePosts={onMutatePost}
             />
           ))}
@@ -89,7 +84,6 @@ export type PostProps = Post & {
     replies: Post[];
   })
   | null;
-  isMe: (userId: string) => boolean;
   onUpdatePosts: { onMutate: () => void };
 };
 
@@ -102,9 +96,15 @@ export const IndividualPost: React.FC<PostProps> = ({
   reposts,
   replies,
   repost,
-  isMe,
   onUpdatePosts,
 }) => {
+  const session = useSession();
+
+  const isMe = (userId: string) => session.data?.user?.id === userId;
+
+  const iHaveLiked = (post: { likes: User[] }) =>
+    post.likes.some(({ id }) => id === session.data?.user?.id);
+
   const [editingText, setEditingText] = useState<string | undefined>(undefined);
   const [replyText, setReplyText] = useState<string | undefined>(undefined);
   const [deleting, setDeleting] = useState(false);
@@ -114,6 +114,7 @@ export const IndividualPost: React.FC<PostProps> = ({
   const editPost = api.posts.edit.useMutation(onUpdatePosts);
   const deletePost = api.posts.delete.useMutation(onUpdatePosts);
   const likePost = api.posts.like.useMutation(onUpdatePosts);
+  const unlikePost = api.posts.unlike.useMutation(onUpdatePosts);
 
   const onConfirmEditingText = (text: string) => {
     editPost.mutate({ postId: id, text });
@@ -155,12 +156,20 @@ export const IndividualPost: React.FC<PostProps> = ({
           >
             Undo Repost {repost.reposts.length}
           </button>
-          <button
-            className="mr-2"
-            onClick={() => likePost.mutate({ postId: repost.id })}
-          >
-            Like {repost.likes.length}
-          </button>
+          {iHaveLiked(repost) ?
+            <button
+              className="mr-2"
+              onClick={() => unlikePost.mutate({ postId: repost.id })}
+            >
+              Unlike {repost.likes.length}
+            </button> :
+            <button
+              className="mr-2"
+              onClick={() => likePost.mutate({ postId: repost.id })}
+            >
+              Like {repost.likes.length}
+            </button>
+          }
         </>
         {replyText !== undefined && (
           <div>
@@ -249,12 +258,20 @@ export const IndividualPost: React.FC<PostProps> = ({
         >
           Repost {reposts.length}
         </button>
-        <button
-          className="mr-2"
-          onClick={() => likePost.mutate({ postId: id })}
-        >
-          Like {likes.length}
-        </button>
+        {iHaveLiked({ likes }) ?
+          <button
+            className="mr-2"
+            onClick={() => unlikePost.mutate({ postId: id })}
+          >
+            Unlike {likes.length}
+          </button> :
+          <button
+            className="mr-2"
+            onClick={() => likePost.mutate({ postId: id })}
+          >
+            Like {likes.length}
+          </button>
+        }
       </>
       {replyText !== undefined && (
         <div>

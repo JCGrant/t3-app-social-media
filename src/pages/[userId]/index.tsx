@@ -91,7 +91,6 @@ const UserPage: NextPage = () => {
               <IndividualPost
                 key={p.id}
                 {...p}
-                isMe={isMe}
                 onUpdatePosts={onMutateUser}
               />
             ))}

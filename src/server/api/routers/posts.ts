@@ -214,4 +214,42 @@ export const postsRouter = createTRPCRouter({
         },
       });
     }),
+
+  unlike: protectedProcedure
+    .input(
+      z.object({
+        postId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const post = await ctx.prisma.post.findFirst({
+        where: {
+          id: input.postId,
+        },
+        include: {
+          likes: true,
+        }
+      });
+      if (!post) {
+        return;
+      }
+      const userId = ctx.session.user.id;
+      // If user has NOT already liked post, return
+      if (!post.likes.some(({ id }) => id === userId)) {
+        return;
+      }
+      return ctx.prisma.post.update({
+        where: {
+          id: input.postId,
+        },
+        data: {
+          likes: {
+            set: post.likes
+              .filter(l => l.id !== userId)
+              .map(l => ({ id: l.id })),
+          }
+        },
+      });
+    }),
+
 });
