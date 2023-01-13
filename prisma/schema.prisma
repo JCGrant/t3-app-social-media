@@ -20,6 +20,27 @@ model Example {
   updatedAt DateTime @updatedAt
 }
 
+model Post {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  text  String?
+  views Int     @default(0)
+  likes Int     @default(0)
+
+  repostId String?
+  repost   Post?   @relation("PostReposts", fields: [repostId], references: [id])
+  reposts  Post[]  @relation("PostReposts")
+
+  repliedToId String?
+  repliedTo   Post?   @relation("PostReplies", fields: [repliedToId], references: [id])
+  replies     Post[]  @relation("PostReplies")
+}
+
 // Necessary for Next auth
 model Account {
   id                String  @id @default(cuid())
@@ -55,6 +76,9 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  posts         Post[]
+  followers     User[]    @relation("UserFollows")
+  following     User[]    @relation("UserFollows")
 }
 
 model VerificationToken {
