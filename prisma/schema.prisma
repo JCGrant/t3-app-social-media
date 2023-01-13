@@ -26,11 +26,11 @@ model Post {
   updatedAt DateTime @updatedAt
 
   userId String
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation("UserPosts", fields: [userId], references: [id])
 
   text  String?
   views Int     @default(0)
-  likes Int     @default(0)
+  likes User[]  @relation("UserLikes")
 
   repostId String?
   repost   Post?   @relation("PostReposts", fields: [repostId], references: [id])
@@ -76,9 +76,10 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  posts         Post[]
+  posts         Post[]    @relation("UserPosts")
   followers     User[]    @relation("UserFollows")
   following     User[]    @relation("UserFollows")
+  likes         Post[]    @relation("UserLikes")
 }
 
 model VerificationToken {

@@ -23,6 +23,7 @@ export const userRouter = createTRPCRouter({
             },
             include: {
               user: true,
+              likes: true,
               replies: {
                 orderBy: {
                   createdAt: "desc",
@@ -36,6 +37,7 @@ export const userRouter = createTRPCRouter({
               repost: {
                 include: {
                   user: true,
+                  likes: true,
                   replies: {
                     orderBy: {
                       createdAt: "desc",

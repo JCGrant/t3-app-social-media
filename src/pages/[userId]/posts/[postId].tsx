@@ -78,15 +78,17 @@ export default PostPage;
 
 export type PostProps = Post & {
   user: User;
+  likes: User[];
   reposts: Post[];
   replies: Post[];
   repost:
-    | (Post & {
-        user: User;
-        reposts: Post[];
-        replies: Post[];
-      })
-    | null;
+  | (Post & {
+    user: User;
+    likes: User[];
+    reposts: Post[];
+    replies: Post[];
+  })
+  | null;
   isMe: (userId: string) => boolean;
   onUpdatePosts: { onMutate: () => void };
 };
@@ -157,7 +159,7 @@ export const IndividualPost: React.FC<PostProps> = ({
             className="mr-2"
             onClick={() => likePost.mutate({ postId: repost.id })}
           >
-            Like {repost.likes}
+            Like {repost.likes.length}
           </button>
         </>
         {replyText !== undefined && (
@@ -251,7 +253,7 @@ export const IndividualPost: React.FC<PostProps> = ({
           className="mr-2"
           onClick={() => likePost.mutate({ postId: id })}
         >
-          Like {likes}
+          Like {likes.length}
         </button>
       </>
       {replyText !== undefined && (

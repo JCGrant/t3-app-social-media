@@ -17,15 +17,18 @@ export const postsRouter = createTRPCRouter({
         },
         include: {
           user: true,
+          likes: true,
           replies: {
             orderBy: {
               createdAt: "desc",
             },
             include: {
               user: true,
+              likes: true,
               repost: {
                 include: {
                   user: true,
+                  likes: true,
                   replies: {
                     orderBy: {
                       createdAt: "desc",
@@ -54,6 +57,7 @@ export const postsRouter = createTRPCRouter({
           repost: {
             include: {
               user: true,
+              likes: true,
               replies: {
                 orderBy: {
                   createdAt: "desc",
@@ -179,15 +183,34 @@ export const postsRouter = createTRPCRouter({
         postId: z.string(),
       })
     )
-    .mutation(({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
+      const post = await ctx.prisma.post.findFirst({
+        where: {
+          id: input.postId,
+        },
+        include: {
+          likes: true,
+        }
+      });
+      if (!post) {
+        return;
+      }
+      const userId = ctx.session.user.id;
+      // If user has already liked post, return
+      if (post.likes.some(({ id }) => id === userId)) {
+        return;
+      }
       return ctx.prisma.post.update({
         where: {
           id: input.postId,
         },
         data: {
           likes: {
-            increment: 1,
-          },
+            set: [
+              { id: ctx.session.user.id },
+              ...post.likes.map(l => ({ id: l.id })),
+            ],
+          }
         },
       });
     }),
