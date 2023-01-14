@@ -132,63 +132,74 @@ export const IndividualPost: React.FC<PostProps> = ({
     }
     return (
       <div>
-        <Link href={`/${repost.user.id}`}>
+        <Link href={`/${user.id}`}>
           {/* eslint-disable-next-line */}
           <img
             className="inline w-10 rounded-full"
-            src={repost.user.image ?? ""}
+            src={user.image ?? ""}
             alt="profile picture"
           />
-          <span className="mr-2">{repost.user.name}:</span>
+          <span className="mr-2">{user.name} Reposted:</span>
         </Link>
-        <span className="mr-10">
-          <Link href={`/${repost.userId}/posts/${repost.id}`}>
-            {repost.text}
+        <div className="ml-10">
+          <Link href={`/${repost.user.id}`}>
+            {/* eslint-disable-next-line */}
+            <img
+              className="inline w-10 rounded-full"
+              src={repost.user.image ?? ""}
+              alt="profile picture"
+            />
+            <span className="mr-2">{repost.user.name}:</span>
           </Link>
-        </span>
-        <>
-          <button className="mr-2" onClick={() => setReplyText("")}>
-            Reply {repost.replies.length}
-          </button>
-          <button
-            className="mr-2"
-            onClick={() => deletePost.mutate({ postId: id })}
-          >
-            Undo Repost {repost.reposts.length}
-          </button>
-          {iHaveLiked(repost) ?
+          <span className="mr-10">
+            <Link href={`/${repost.userId}/posts/${repost.id}`}>
+              {repost.text}
+            </Link>
+          </span>
+          <>
+            <button className="mr-2" onClick={() => setReplyText("")}>
+              Reply {repost.replies.length}
+            </button>
             <button
               className="mr-2"
-              onClick={() => unlikePost.mutate({ postId: repost.id })}
+              onClick={() => deletePost.mutate({ postId: id })}
             >
-              Unlike {repost.likes.length}
-            </button> :
-            <button
-              className="mr-2"
-              onClick={() => likePost.mutate({ postId: repost.id })}
-            >
-              Like {repost.likes.length}
+              Undo Repost {repost.reposts.length}
             </button>
-          }
-        </>
-        {replyText !== undefined && (
-          <div>
-            <textarea
-              value={replyText}
-              onChange={(e) => setReplyText(e.target.value)}
-            ></textarea>
-            <button
-              className="mr-2"
-              disabled={replyText.length === 0}
-              onClick={() => onClickPostReply(repost.id, replyText)}
-            >
-              Post Reply
-            </button>
-            <button className="mr-2" onClick={() => setReplyText(undefined)}>
-              Cancel
-            </button>
-          </div>
-        )}
+            {iHaveLiked(repost) ?
+              <button
+                className="mr-2"
+                onClick={() => unlikePost.mutate({ postId: repost.id })}
+              >
+                Unlike {repost.likes.length}
+              </button> :
+              <button
+                className="mr-2"
+                onClick={() => likePost.mutate({ postId: repost.id })}
+              >
+                Like {repost.likes.length}
+              </button>
+            }
+          </>
+          {replyText !== undefined && (
+            <div>
+              <textarea
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+              ></textarea>
+              <button
+                className="mr-2"
+                disabled={replyText.length === 0}
+                onClick={() => onClickPostReply(repost.id, replyText)}
+              >
+                Post Reply
+              </button>
+              <button className="mr-2" onClick={() => setReplyText(undefined)}>
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     );
   }

@@ -74,6 +74,89 @@ export const postsRouter = createTRPCRouter({
       });
     }),
 
+  timeline: protectedProcedure
+    .query(({ ctx }) => {
+      return ctx.prisma.post.findMany({
+        where: {
+          OR: [
+            {
+              user: {
+                id: ctx.session.user.id
+              },
+            },
+            {
+              user: {
+                followers: {
+                  some: {
+                    id: ctx.session.user.id
+                  },
+                },
+              }
+            },
+          ],
+        },
+        include: {
+          user: true,
+          likes: true,
+          replies: {
+            orderBy: {
+              createdAt: "desc",
+            },
+            include: {
+              user: true,
+              likes: true,
+              repost: {
+                include: {
+                  user: true,
+                  likes: true,
+                  replies: {
+                    orderBy: {
+                      createdAt: "desc",
+                    },
+                  },
+                  reposts: {
+                    orderBy: {
+                      createdAt: "desc",
+                    },
+                  },
+                },
+              },
+              replies: {
+                orderBy: {
+                  createdAt: "desc",
+                },
+              },
+              reposts: {
+                orderBy: {
+                  createdAt: "desc",
+                },
+              },
+            },
+          },
+          reposts: true,
+          repost: {
+            include: {
+              user: true,
+              likes: true,
+              replies: {
+                orderBy: {
+                  createdAt: "desc",
+                },
+              },
+              reposts: {
+                orderBy: {
+                  createdAt: "desc",
+                },
+              },
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      })
+    }),
+
   create: protectedProcedure
     .input(
       z.object({
