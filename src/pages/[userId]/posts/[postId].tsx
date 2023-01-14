@@ -141,64 +141,25 @@ export const IndividualPost: React.FC<PostProps> = ({
           />
           <span className="mr-2">{user.name} Reposted:</span>
         </Link>
-        <div className="ml-10">
-          <Link href={`/${repost.user.id}`}>
-            {/* eslint-disable-next-line */}
-            <img
-              className="inline w-10 rounded-full"
-              src={repost.user.image ?? ""}
-              alt="profile picture"
-            />
-            <span className="mr-2">{repost.user.name}:</span>
-          </Link>
-          <span className="mr-10">
-            <Link href={`/${repost.userId}/posts/${repost.id}`}>
-              {repost.text}
-            </Link>
-          </span>
+        {isMe(user.id) && (deleting ? (
           <>
-            <button className="mr-2" onClick={() => setReplyText("")}>
-              Reply {repost.replies.length}
-            </button>
             <button
               className="mr-2"
               onClick={() => deletePost.mutate({ postId: id })}
             >
-              Undo Repost {repost.reposts.length}
+              Confirm
             </button>
-            {iHaveLiked(repost) ?
-              <button
-                className="mr-2"
-                onClick={() => unlikePost.mutate({ postId: repost.id })}
-              >
-                Unlike {repost.likes.length}
-              </button> :
-              <button
-                className="mr-2"
-                onClick={() => likePost.mutate({ postId: repost.id })}
-              >
-                Like {repost.likes.length}
-              </button>
-            }
+            <button className="mr-2" onClick={() => setDeleting(false)}>
+              Cancel
+            </button>
           </>
-          {replyText !== undefined && (
-            <div>
-              <textarea
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-              ></textarea>
-              <button
-                className="mr-2"
-                disabled={replyText.length === 0}
-                onClick={() => onClickPostReply(repost.id, replyText)}
-              >
-                Post Reply
-              </button>
-              <button className="mr-2" onClick={() => setReplyText(undefined)}>
-                Cancel
-              </button>
-            </div>
-          )}
+        ) : (
+          <button className="mr-2" onClick={() => setDeleting(true)}>
+            Delete
+          </button>
+        ))}
+        <div className="ml-10">
+          <IndividualPost {...repost} repost={null} onUpdatePosts={onUpdatePosts} />
         </div>
       </div>
     );
