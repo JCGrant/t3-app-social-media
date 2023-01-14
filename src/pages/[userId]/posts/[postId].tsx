@@ -188,13 +188,18 @@ export const IndividualPost: React.FC<PostProps> = ({
       {isMe(userId) && (
         <>
           {editingText ? (
-            <button
-              className="mr-2"
-              disabled={editingText.length === 0}
-              onClick={() => onConfirmEditingText(editingText)}
-            >
-              Confirm
-            </button>
+            <>
+              <button
+                className="mr-2"
+                disabled={editingText.length === 0}
+                onClick={() => onConfirmEditingText(editingText)}
+              >
+                Confirm
+              </button>
+              <button className="mr-2" onClick={() => setEditingText(undefined)}>
+                Cancel
+              </button>
+            </>
           ) : (
             <button className="mr-2" onClick={() => setEditingText(text)}>
               Edit
