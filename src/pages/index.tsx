@@ -53,7 +53,7 @@ const Home: NextPage = () => {
             <textarea
               value={newPostText}
               onChange={(e) => setNewPostText(e.target.value)}
-            ></textarea>
+            />
             <button
               className="mr-2"
               disabled={newPostText.length === 0}

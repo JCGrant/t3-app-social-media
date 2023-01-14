@@ -71,13 +71,13 @@ export type PostProps = Post & {
   reposts: Post[];
   replies: Post[];
   repost:
-    | (Post & {
-        user: User;
-        likes: User[];
-        reposts: Post[];
-        replies: Post[];
-      })
-    | null;
+  | (Post & {
+    user: User;
+    likes: User[];
+    reposts: Post[];
+    replies: Post[];
+  })
+  | null;
   onUpdatePosts: { onMutate: () => void };
 };
 
@@ -177,7 +177,7 @@ export const IndividualPost: React.FC<PostProps> = ({
       </Link>
       <span className="mr-10">
         {editingText ? (
-          <input
+          <textarea
             value={editingText}
             onChange={(e) => setEditingText(e.target.value)}
           />
@@ -250,7 +250,7 @@ export const IndividualPost: React.FC<PostProps> = ({
           <textarea
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
-          ></textarea>
+          />
           <button
             className="mr-2"
             disabled={replyText.length === 0}
