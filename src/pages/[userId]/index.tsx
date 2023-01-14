@@ -1,4 +1,4 @@
-import { User } from "@prisma/client";
+import { type User } from "@prisma/client";
 import { type NextPage } from "next";
 import { useSession } from "next-auth/react";
 import Head from "next/head";
