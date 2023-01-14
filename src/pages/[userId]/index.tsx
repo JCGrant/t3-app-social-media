@@ -54,31 +54,33 @@ const UserPage: NextPage = () => {
     return <div>loading</div>;
   }
 
-  if (!user.data) {
+  const userData = user.data;
+
+  if (!userData) {
     return <div>@{userId} - no such user</div>;
   }
 
   return (
     <>
       <Head>
-        <title>{user.data.name}</title>
+        <title>{userData.name}</title>
       </Head>
       <div>
         <div>
           {/* eslint-disable-next-line */}
           <img
             className="rounded-full"
-            src={user.data.image ?? ""}
+            src={userData.image ?? ""}
             alt="profile picture"
           />
-          <h1 className="text-3xl">{user.data.name}</h1>
-          {isMe(user.data.id) &&
+          <h1 className="text-3xl">{userData.name}</h1>
+          {isMe(userData.id) &&
             (newUsername === undefined ? (
               <>
-                <span className="text-gray-400 mr-2">@{user.data.username ?? user.data.id}</span>
+                <span className="text-gray-400 mr-2">@{userData.username ?? userData.id}</span>
                 <button
                   className="mr-2"
-                  onClick={() => setNewUsername(user.data!.username ?? user.data!.id)}>
+                  onClick={() => setNewUsername(userData.username ?? userData.id)}>
                   Edit Username
                 </button>
               </>
@@ -103,16 +105,16 @@ const UserPage: NextPage = () => {
                 </button>
               </>
             ))}
-          {isMe(user.data.id) ||
-            (iAmFollowing(user.data) ? (
+          {isMe(userData.id) ||
+            (iAmFollowing(userData) ? (
               <button
-                onClick={() => unfollowUser.mutate({ userId: user.data!.id })}
+                onClick={() => unfollowUser.mutate({ userId: userData.id })}
               >
                 Unfollow
               </button>
             ) : (
               <button
-                onClick={() => followUser.mutate({ userId: user.data!.id })}
+                onClick={() => followUser.mutate({ userId: userData.id })}
               >
                 Follow
               </button>
@@ -120,7 +122,7 @@ const UserPage: NextPage = () => {
         </div>
         <div>
           <h2 className="text-xl">Posts</h2>
-          {isMe(user.data.id) &&
+          {isMe(userData.id) &&
             (newPostText === undefined ? (
               <button className="mr-2" onClick={() => setNewPostText("")}>
                 New Post
@@ -146,17 +148,17 @@ const UserPage: NextPage = () => {
                 </button>
               </>
             ))}
-          {(user.data.posts ?? [])
+          {(userData.posts ?? [])
             .filter((p) => p.repliedToId === null)
             .map((p) => (
               <IndividualPost key={p.id} {...p} onUpdatePosts={onMutateUser} />
             ))}
           <h2 className="text-xl">Likes</h2>
-          {(user.data.likes ?? []).map((p) => (
+          {(userData.likes ?? []).map((p) => (
             <IndividualPost key={p.id} {...p} onUpdatePosts={onMutateUser} />
           ))}
           <h2 className="text-xl">Following</h2>
-          {(user.data.following ?? []).map((u) => (
+          {(userData.following ?? []).map((u) => (
             <div key={u.id}>
               <Link href={`/${u.id}`}>
                 {/* eslint-disable-next-line */}
@@ -170,7 +172,7 @@ const UserPage: NextPage = () => {
             </div>
           ))}
           <h2 className="text-xl">Followers</h2>
-          {(user.data.followers ?? []).map((u) => (
+          {(userData.followers ?? []).map((u) => (
             <div key={u.id}>
               <Link href={`/${u.id}`}>
                 {/* eslint-disable-next-line */}
