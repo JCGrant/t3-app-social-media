@@ -51,17 +51,10 @@ const PostPage = () => {
           </div>
         </Link>
         <div>
-          <IndividualPost
-            {...post.data}
-            onUpdatePosts={onMutatePost}
-          />
+          <IndividualPost {...post.data} onUpdatePosts={onMutatePost} />
           <h2 className="text-xl">Replies</h2>
           {(post.data.replies ?? []).map((p) => (
-            <IndividualPost
-              key={p.id}
-              {...p}
-              onUpdatePosts={onMutatePost}
-            />
+            <IndividualPost key={p.id} {...p} onUpdatePosts={onMutatePost} />
           ))}
         </div>
       </div>
@@ -77,13 +70,13 @@ export type PostProps = Post & {
   reposts: Post[];
   replies: Post[];
   repost:
-  | (Post & {
-    user: User;
-    likes: User[];
-    reposts: Post[];
-    replies: Post[];
-  })
-  | null;
+    | (Post & {
+        user: User;
+        likes: User[];
+        reposts: Post[];
+        replies: Post[];
+      })
+    | null;
   onUpdatePosts: { onMutate: () => void };
 };
 
@@ -141,25 +134,30 @@ export const IndividualPost: React.FC<PostProps> = ({
           />
           <span className="mr-2">{user.name} Reposted:</span>
         </Link>
-        {isMe(user.id) && (deleting ? (
-          <>
-            <button
-              className="mr-2"
-              onClick={() => deletePost.mutate({ postId: id })}
-            >
-              Confirm
+        {isMe(user.id) &&
+          (deleting ? (
+            <>
+              <button
+                className="mr-2"
+                onClick={() => deletePost.mutate({ postId: id })}
+              >
+                Confirm
+              </button>
+              <button className="mr-2" onClick={() => setDeleting(false)}>
+                Cancel
+              </button>
+            </>
+          ) : (
+            <button className="mr-2" onClick={() => setDeleting(true)}>
+              Delete
             </button>
-            <button className="mr-2" onClick={() => setDeleting(false)}>
-              Cancel
-            </button>
-          </>
-        ) : (
-          <button className="mr-2" onClick={() => setDeleting(true)}>
-            Delete
-          </button>
-        ))}
+          ))}
         <div className="ml-10">
-          <IndividualPost {...repost} repost={null} onUpdatePosts={onUpdatePosts} />
+          <IndividualPost
+            {...repost}
+            repost={null}
+            onUpdatePosts={onUpdatePosts}
+          />
         </div>
       </div>
     );
@@ -230,20 +228,21 @@ export const IndividualPost: React.FC<PostProps> = ({
         >
           Repost {reposts.length}
         </button>
-        {iHaveLiked({ likes }) ?
+        {iHaveLiked({ likes }) ? (
           <button
             className="mr-2"
             onClick={() => unlikePost.mutate({ postId: id })}
           >
             Unlike {likes.length}
-          </button> :
+          </button>
+        ) : (
           <button
             className="mr-2"
             onClick={() => likePost.mutate({ postId: id })}
           >
             Like {likes.length}
           </button>
-        }
+        )}
       </>
       {replyText !== undefined && (
         <div>

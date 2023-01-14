@@ -26,15 +26,15 @@ const Home: NextPage = () => {
   };
 
   if (!session.data) {
-    return <>Please Sign in above</>
+    return <>Please Sign in above</>;
   }
 
-  if (timeline.status === 'loading') {
-    return <>loading</>
+  if (timeline.status === "loading") {
+    return <>loading</>;
   }
 
   if (!timeline.data) {
-    return <>fetching timeline failed</>
+    return <>fetching timeline failed</>;
   }
 
   return (
@@ -61,26 +61,23 @@ const Home: NextPage = () => {
             >
               Post
             </button>
-            <button
-              className="mr-2"
-              onClick={() => setNewPostText(undefined)}
-            >
+            <button className="mr-2" onClick={() => setNewPostText(undefined)}>
               Cancel
             </button>
           </>
         )}
         {timeline.data
           .filter((p) => p.repliedToId === null)
-          .map(p =>
+          .map((p) => (
             <IndividualPost
               key={p.id}
               {...p}
               onUpdatePosts={onMutateTimeline}
-            />)}
+            />
+          ))}
       </div>
     </>
   );
 };
 
 export default Home;
-

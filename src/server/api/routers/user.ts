@@ -92,9 +92,11 @@ export const userRouter = createTRPCRouter({
     }),
 
   follow: protectedProcedure
-    .input(z.object({
-      userId: z.string(),
-    }))
+    .input(
+      z.object({
+        userId: z.string(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       const user = await ctx.prisma.user.findFirst({
         where: {
@@ -122,17 +124,19 @@ export const userRouter = createTRPCRouter({
           following: {
             set: [
               { id: input.userId },
-              ...user.following.map(u => ({ id: u.id })),
-            ]
-          }
-        }
-      })
+              ...user.following.map((u) => ({ id: u.id })),
+            ],
+          },
+        },
+      });
     }),
 
   unfollow: protectedProcedure
-    .input(z.object({
-      userId: z.string(),
-    }))
+    .input(
+      z.object({
+        userId: z.string(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       const user = await ctx.prisma.user.findFirst({
         where: {
@@ -156,12 +160,10 @@ export const userRouter = createTRPCRouter({
         data: {
           following: {
             set: user.following
-              .filter(u => u.id !== input.userId)
-              .map(u => ({ id: u.id })),
-          }
-        }
-      })
+              .filter((u) => u.id !== input.userId)
+              .map((u) => ({ id: u.id })),
+          },
+        },
+      });
     }),
-
-
 });

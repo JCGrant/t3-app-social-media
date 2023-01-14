@@ -74,88 +74,87 @@ export const postsRouter = createTRPCRouter({
       });
     }),
 
-  timeline: protectedProcedure
-    .query(({ ctx }) => {
-      return ctx.prisma.post.findMany({
-        where: {
-          OR: [
-            {
-              user: {
-                id: ctx.session.user.id
-              },
+  timeline: protectedProcedure.query(({ ctx }) => {
+    return ctx.prisma.post.findMany({
+      where: {
+        OR: [
+          {
+            user: {
+              id: ctx.session.user.id,
             },
-            {
-              user: {
-                followers: {
-                  some: {
-                    id: ctx.session.user.id
-                  },
-                },
-              }
-            },
-          ],
-        },
-        include: {
-          user: true,
-          likes: true,
-          replies: {
-            orderBy: {
-              createdAt: "desc",
-            },
-            include: {
-              user: true,
-              likes: true,
-              repost: {
-                include: {
-                  user: true,
-                  likes: true,
-                  replies: {
-                    orderBy: {
-                      createdAt: "desc",
-                    },
-                  },
-                  reposts: {
-                    orderBy: {
-                      createdAt: "desc",
-                    },
-                  },
-                },
-              },
-              replies: {
-                orderBy: {
-                  createdAt: "desc",
-                },
-              },
-              reposts: {
-                orderBy: {
-                  createdAt: "desc",
+          },
+          {
+            user: {
+              followers: {
+                some: {
+                  id: ctx.session.user.id,
                 },
               },
             },
           },
-          reposts: true,
-          repost: {
-            include: {
-              user: true,
-              likes: true,
-              replies: {
-                orderBy: {
-                  createdAt: "desc",
+        ],
+      },
+      include: {
+        user: true,
+        likes: true,
+        replies: {
+          orderBy: {
+            createdAt: "desc",
+          },
+          include: {
+            user: true,
+            likes: true,
+            repost: {
+              include: {
+                user: true,
+                likes: true,
+                replies: {
+                  orderBy: {
+                    createdAt: "desc",
+                  },
+                },
+                reposts: {
+                  orderBy: {
+                    createdAt: "desc",
+                  },
                 },
               },
-              reposts: {
-                orderBy: {
-                  createdAt: "desc",
-                },
+            },
+            replies: {
+              orderBy: {
+                createdAt: "desc",
+              },
+            },
+            reposts: {
+              orderBy: {
+                createdAt: "desc",
               },
             },
           },
         },
-        orderBy: {
-          createdAt: 'desc'
-        }
-      })
-    }),
+        reposts: true,
+        repost: {
+          include: {
+            user: true,
+            likes: true,
+            replies: {
+              orderBy: {
+                createdAt: "desc",
+              },
+            },
+            reposts: {
+              orderBy: {
+                createdAt: "desc",
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  }),
 
   create: protectedProcedure
     .input(
@@ -273,7 +272,7 @@ export const postsRouter = createTRPCRouter({
         },
         include: {
           likes: true,
-        }
+        },
       });
       if (!post) {
         return;
@@ -291,9 +290,9 @@ export const postsRouter = createTRPCRouter({
           likes: {
             set: [
               { id: ctx.session.user.id },
-              ...post.likes.map(l => ({ id: l.id })),
+              ...post.likes.map((l) => ({ id: l.id })),
             ],
-          }
+          },
         },
       });
     }),
@@ -311,7 +310,7 @@ export const postsRouter = createTRPCRouter({
         },
         include: {
           likes: true,
-        }
+        },
       });
       if (!post) {
         return;
@@ -328,11 +327,10 @@ export const postsRouter = createTRPCRouter({
         data: {
           likes: {
             set: post.likes
-              .filter(l => l.id !== userId)
-              .map(l => ({ id: l.id })),
-          }
+              .filter((l) => l.id !== userId)
+              .map((l) => ({ id: l.id })),
+          },
         },
       });
     }),
-
 });
