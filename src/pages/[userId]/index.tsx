@@ -33,6 +33,7 @@ const UserPage: NextPage = () => {
   const createPost = api.posts.create.useMutation(onMutateUser);
   const followUser = api.users.follow.useMutation(onMutateUser);
   const unfollowUser = api.users.unfollow.useMutation(onMutateUser);
+  const editUsername = api.users.editUsername.useMutation(onMutateUser);
 
   const [newPostText, setNewPostText] = useState<string | undefined>(undefined);
 
@@ -40,6 +41,14 @@ const UserPage: NextPage = () => {
     createPost.mutate({ text });
     setNewPostText(undefined);
   };
+
+  const [newUsername, setNewUsername] = useState<string | undefined>(undefined);
+
+  const onClickConfirmNewUsername = (newUsername: string) => {
+    editUsername.mutate({ newUsername });
+    setNewUsername(undefined);
+    window.location.href = `/${newUsername}`
+  }
 
   if (user.status === "loading") {
     return <div>loading</div>;
@@ -63,20 +72,51 @@ const UserPage: NextPage = () => {
             alt="profile picture"
           />
           <h1 className="text-3xl">{user.data.name}</h1>
-          <span className="text-gray-400">@{user.data.id}</span>
-          {iAmFollowing(user.data) ? (
-            <button
-              onClick={() => unfollowUser.mutate({ userId: user.data!.id })}
-            >
-              Unfollow
-            </button>
-          ) : (
-            <button
-              onClick={() => followUser.mutate({ userId: user.data!.id })}
-            >
-              Follow
-            </button>
-          )}
+          {isMe(user.data.id) &&
+            (newUsername === undefined ? (
+              <>
+                <span className="text-gray-400 mr-2">@{user.data.username ?? user.data.id}</span>
+                <button
+                  className="mr-2"
+                  onClick={() => setNewUsername(user.data!.username ?? user.data!.id)}>
+                  Edit Username
+                </button>
+              </>
+            ) : (
+              <>
+                <input
+                  value={newUsername}
+                  onChange={(e) => setNewUsername(e.target.value)}
+                />
+                <button
+                  className="mr-2"
+                  disabled={newUsername.length === 0}
+                  onClick={() => onClickConfirmNewUsername(newUsername)}
+                >
+                  Confirm
+                </button>
+                <button
+                  className="mr-2"
+                  onClick={() => setNewUsername(undefined)}
+                >
+                  Cancel
+                </button>
+              </>
+            ))}
+          {isMe(user.data.id) ||
+            (iAmFollowing(user.data) ? (
+              <button
+                onClick={() => unfollowUser.mutate({ userId: user.data!.id })}
+              >
+                Unfollow
+              </button>
+            ) : (
+              <button
+                onClick={() => followUser.mutate({ userId: user.data!.id })}
+              >
+                Follow
+              </button>
+            ))}
         </div>
         <div>
           <h2 className="text-xl">Posts</h2>

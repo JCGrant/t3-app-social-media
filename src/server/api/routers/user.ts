@@ -9,7 +9,91 @@ export const userRouter = createTRPCRouter({
         id: z.string(),
       })
     )
-    .query(({ ctx, input }) => {
+    .query(async ({ ctx, input }) => {
+      const user = await ctx.prisma.user.findFirst({
+        where: {
+          username: input.id,
+        },
+        include: {
+          likes: {
+            orderBy: {
+              createdAt: "desc",
+            },
+            include: {
+              user: true,
+              likes: true,
+              replies: {
+                orderBy: {
+                  createdAt: "desc",
+                },
+              },
+              reposts: {
+                orderBy: {
+                  createdAt: "desc",
+                },
+              },
+              repost: {
+                include: {
+                  user: true,
+                  likes: true,
+                  replies: {
+                    orderBy: {
+                      createdAt: "desc",
+                    },
+                  },
+                  reposts: {
+                    orderBy: {
+                      createdAt: "desc",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          followers: true,
+          following: true,
+          posts: {
+            orderBy: {
+              createdAt: "desc",
+            },
+            include: {
+              user: true,
+              likes: true,
+              replies: {
+                orderBy: {
+                  createdAt: "desc",
+                },
+              },
+              reposts: {
+                orderBy: {
+                  createdAt: "desc",
+                },
+              },
+              repost: {
+                include: {
+                  user: true,
+                  likes: true,
+                  replies: {
+                    orderBy: {
+                      createdAt: "desc",
+                    },
+                  },
+                  reposts: {
+                    orderBy: {
+                      createdAt: "desc",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (user) {
+        return user;
+      }
+
       return ctx.prisma.user.findFirst({
         where: {
           id: input.id,
@@ -89,6 +173,21 @@ export const userRouter = createTRPCRouter({
           },
         },
       });
+    }),
+
+  editUsername: protectedProcedure
+    .input(z.object({
+      newUsername: z.string(),
+    }))
+    .mutation(({ ctx, input }) => {
+      return ctx.prisma.user.update({
+        where: {
+          id: ctx.session.user.id
+        },
+        data: {
+          username: input.newUsername
+        }
+      })
     }),
 
   follow: protectedProcedure
