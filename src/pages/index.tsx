@@ -1,10 +1,12 @@
 import { type NextPage } from "next";
+import { useSession } from "next-auth/react";
 import Head from "next/head";
 
 import { api } from "../utils/api";
 import { IndividualPost } from "./[userId]/posts/[postId]";
 
 const Home: NextPage = () => {
+  const session = useSession();
   const timeline = api.posts.timeline.useQuery();
 
   const onMutateTimeline = {
@@ -12,6 +14,10 @@ const Home: NextPage = () => {
       setTimeout(() => void timeline.refetch(), 300);
     },
   };
+
+  if (!session.data) {
+    return <>Please Sign in above</>
+  }
 
   if (timeline.status === 'loading') {
     return <>loading</>
