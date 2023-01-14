@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { api } from "../../utils/api";
+import { userSlug } from "../../utils/models";
 import { IndividualPost } from "./posts/[postId]";
 
 const UserPage: NextPage = () => {
@@ -47,8 +48,8 @@ const UserPage: NextPage = () => {
   const onClickConfirmNewUsername = (newUsername: string) => {
     editUsername.mutate({ newUsername });
     setNewUsername(undefined);
-    window.location.href = `/${newUsername}`
-  }
+    window.location.href = `/${newUsername}`;
+  };
 
   if (user.status === "loading") {
     return <div>loading</div>;
@@ -77,10 +78,15 @@ const UserPage: NextPage = () => {
           {isMe(userData.id) &&
             (newUsername === undefined ? (
               <>
-                <span className="text-gray-400 mr-2">@{userData.username ?? userData.id}</span>
+                <span className="mr-2 text-gray-400">
+                  @{userData.username ?? userData.id}
+                </span>
                 <button
                   className="mr-2"
-                  onClick={() => setNewUsername(userData.username ?? userData.id)}>
+                  onClick={() =>
+                    setNewUsername(userData.username ?? userData.id)
+                  }
+                >
                   Edit Username
                 </button>
               </>
@@ -160,7 +166,7 @@ const UserPage: NextPage = () => {
           <h2 className="text-xl">Following</h2>
           {(userData.following ?? []).map((u) => (
             <div key={u.id}>
-              <Link href={`/${u.id}`}>
+              <Link href={`/${userSlug(u)}`}>
                 {/* eslint-disable-next-line */}
                 <img
                   className="inline w-10 rounded-full"
@@ -174,7 +180,7 @@ const UserPage: NextPage = () => {
           <h2 className="text-xl">Followers</h2>
           {(userData.followers ?? []).map((u) => (
             <div key={u.id}>
-              <Link href={`/${u.id}`}>
+              <Link href={`/${userSlug(u)}`}>
                 {/* eslint-disable-next-line */}
                 <img
                   className="inline w-10 rounded-full"

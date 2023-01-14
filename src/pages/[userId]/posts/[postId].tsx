@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { api } from "../../../utils/api";
+import { userSlug } from "../../../utils/models";
 
 const PostPage = () => {
   const router = useRouter();
@@ -38,7 +39,7 @@ const PostPage = () => {
         </title>
       </Head>
       <div>
-        <Link href={`/${post.data.user.id}`}>
+        <Link href={`/${userSlug(post.data.user)}`}>
           <div>
             {/* eslint-disable-next-line */}
             <img
@@ -125,7 +126,7 @@ export const IndividualPost: React.FC<PostProps> = ({
     }
     return (
       <div>
-        <Link href={`/${user.id}`}>
+        <Link href={`/${userSlug(user)}`}>
           {/* eslint-disable-next-line */}
           <img
             className="inline w-10 rounded-full"
@@ -165,7 +166,7 @@ export const IndividualPost: React.FC<PostProps> = ({
 
   return (
     <div>
-      <Link href={`/${user.id}`}>
+      <Link href={`/${userSlug(user)}`}>
         {/* eslint-disable-next-line */}
         <img
           className="inline w-10 rounded-full"
@@ -181,7 +182,7 @@ export const IndividualPost: React.FC<PostProps> = ({
             onChange={(e) => setEditingText(e.target.value)}
           />
         ) : (
-          <Link href={`/${userId}/posts/${id}`}>{text}</Link>
+          <Link href={`/${userSlug(user)}/posts/${id}`}>{text}</Link>
         )}
       </span>
       {isMe(userId) && (
