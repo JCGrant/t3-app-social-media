@@ -75,9 +75,11 @@ const UserPage: NextPage = () => {
             alt="profile picture"
           />
           <h1 className="text-3xl">{userData.name}</h1>
-          {newUsername === undefined && <span className="mr-2 text-gray-400">
-            @{userData.username ?? userData.id}
-          </span>}
+          {newUsername === undefined && (
+            <span className="mr-2 text-gray-400">
+              @{userData.username ?? userData.id}
+            </span>
+          )}
           {isMe(userData.id) &&
             (newUsername === undefined ? (
               <>

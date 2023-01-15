@@ -71,13 +71,13 @@ export type PostProps = Post & {
   reposts: Post[];
   replies: Post[];
   repost:
-  | (Post & {
-    user: User;
-    likes: User[];
-    reposts: Post[];
-    replies: Post[];
-  })
-  | null;
+    | (Post & {
+        user: User;
+        likes: User[];
+        reposts: Post[];
+        replies: Post[];
+      })
+    | null;
   onUpdatePosts: { onMutate: () => void };
 };
 
@@ -196,7 +196,10 @@ export const IndividualPost: React.FC<PostProps> = ({
               >
                 Confirm
               </button>
-              <button className="mr-2" onClick={() => setEditingText(undefined)}>
+              <button
+                className="mr-2"
+                onClick={() => setEditingText(undefined)}
+              >
                 Cancel
               </button>
             </>
