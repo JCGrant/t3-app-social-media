@@ -48,7 +48,7 @@ const PostPage = () => {
               alt="profile picture"
             />
             <h1 className="text-3xl">{post.data.user.name}</h1>
-            <span className="text-gray-400">@{post.data.user.id}</span>
+            <span className="text-gray-400">@{userSlug(post.data.user)}</span>
           </div>
         </Link>
         <div>
@@ -71,13 +71,13 @@ export type PostProps = Post & {
   reposts: Post[];
   replies: Post[];
   repost:
-    | (Post & {
-        user: User;
-        likes: User[];
-        reposts: Post[];
-        replies: Post[];
-      })
-    | null;
+  | (Post & {
+    user: User;
+    likes: User[];
+    reposts: Post[];
+    replies: Post[];
+  })
+  | null;
   onUpdatePosts: { onMutate: () => void };
 };
 
