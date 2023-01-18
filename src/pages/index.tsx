@@ -2,9 +2,10 @@ import { type NextPage } from "next";
 import { useSession } from "next-auth/react";
 import Head from "next/head";
 import { useState } from "react";
+import AutoResizeTextArea from "../components/AutoResizeTextArea";
 
 import { api } from "../utils/api";
-import { IndividualPost } from "./[userId]/posts/[postId]";
+import { PostCard } from "./[userId]/posts/[postId]";
 
 const Home: NextPage = () => {
   const session = useSession();
@@ -18,18 +19,14 @@ const Home: NextPage = () => {
 
   const createPost = api.posts.create.useMutation(onMutateTimeline);
 
-  const [newPostText, setNewPostText] = useState<string | undefined>(undefined);
+  const [newPostText, setNewPostText] = useState<string>("");
 
   const onClickPost = (text: string) => {
     createPost.mutate({ text });
-    setNewPostText(undefined);
+    setNewPostText("");
   };
 
-  if (!session.data) {
-    return <>Please Sign in above</>;
-  }
-
-  if (timeline.status === "loading") {
+  if (!session.data || timeline.status === "loading") {
     return <>loading</>;
   }
 
@@ -42,36 +39,29 @@ const Home: NextPage = () => {
       <Head>
         <title>Timeline</title>
       </Head>
-      <div>
-        <h1 className="text-3xl">Timeline</h1>
-        {newPostText === undefined ? (
-          <button className="mr-2" onClick={() => setNewPostText("")}>
-            New Post
+      <div className="lg:w-1/2 mx-auto">
+        <h1 className="text-3xl mb-4">Home</h1>
+        <div className="flex mb-4 flex-col">
+          <AutoResizeTextArea
+            placeholder="What's happening?"
+            value={newPostText}
+            onChange={(e) => setNewPostText(e.target.value)}
+            className="w-full p-2 bg-purple-900 rounded-md mb-2 h-fit resize-none placeholder-gray-200"
+          />
+          <button
+            className="self-end bg-purple-800 p-2 rounded-md font-bold disabled:opacity-70 hover:opacity-90"
+            disabled={newPostText.length === 0}
+            onClick={() => onClickPost(newPostText)}
+          >
+            Post
           </button>
-        ) : (
-          <>
-            <textarea
-              value={newPostText}
-              onChange={(e) => setNewPostText(e.target.value)}
-            />
-            <button
-              className="mr-2"
-              disabled={newPostText.length === 0}
-              onClick={() => onClickPost(newPostText)}
-            >
-              Post
-            </button>
-            <button className="mr-2" onClick={() => setNewPostText(undefined)}>
-              Cancel
-            </button>
-          </>
-        )}
+        </div>
         {timeline.data
           .filter((p) => p.repliedToId === null)
           .map((p) => (
-            <IndividualPost
+            <PostCard
               key={p.id}
-              {...p}
+              post={p}
               onUpdatePosts={onMutateTimeline}
             />
           ))}

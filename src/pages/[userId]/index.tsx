@@ -5,9 +5,10 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import AutoResizeTextArea from "../../components/AutoResizeTextArea";
 import { api } from "../../utils/api";
 import { userSlug } from "../../utils/models";
-import { IndividualPost } from "./posts/[postId]";
+import { PostCard } from "./posts/[postId]";
 
 const UserPage: NextPage = () => {
   const router = useRouter();
@@ -36,11 +37,11 @@ const UserPage: NextPage = () => {
   const unfollowUser = api.users.unfollow.useMutation(onMutateUser);
   const editUsername = api.users.editUsername.useMutation(onMutateUser);
 
-  const [newPostText, setNewPostText] = useState<string | undefined>(undefined);
+  const [newPostText, setNewPostText] = useState<string>("");
 
   const onClickPost = (text: string) => {
     createPost.mutate({ text });
-    setNewPostText(undefined);
+    setNewPostText("");
   };
 
   const [newUsername, setNewUsername] = useState<string | undefined>(undefined);
@@ -50,6 +51,8 @@ const UserPage: NextPage = () => {
     setNewUsername(undefined);
     window.location.href = `/${newUsername}`;
   };
+
+  const [postPage, setPostPage] = useState<'posts' | 'postsAndReplies' | 'likes'>('posts');
 
   if (user.status === "loading") {
     return <div>loading</div>;
@@ -66,18 +69,18 @@ const UserPage: NextPage = () => {
       <Head>
         <title>{userData.name}</title>
       </Head>
-      <div>
-        <div>
+      <div className="lg:w-1/2 mx-auto">
+        <div className="mb-4">
           {/* eslint-disable-next-line */}
           <img
-            className="rounded-full"
+            className="rounded-full border-4 border-purple-900"
             src={userData.image ?? ""}
             alt="profile picture"
           />
-          <h1 className="text-3xl">{userData.name}</h1>
+          <h1 className="text-3xl font-bold">{userData.name}</h1>
           {newUsername === undefined && (
-            <span className="mr-2 text-gray-400">
-              @{userData.username ?? userData.id}
+            <span className="mr-2 text-purple-400">
+              @{userSlug(userData)}
             </span>
           )}
           {isMe(userData.id) &&
@@ -127,74 +130,81 @@ const UserPage: NextPage = () => {
                 Follow
               </button>
             ))}
+          <div>
+            <span className="mr-8 hover:underline">
+              <Link href={`/${userSlug(userData)}/following`}>
+                <span className="font-bold">{userData.following.length}</span> Following
+              </Link>
+            </span>
+            <span className="hover:underline">
+              <Link href={`/${userSlug(userData)}/followers`}>
+                <span className="font-bold">{userData.followers.length}</span> Followers
+              </Link>
+            </span>
+          </div>
         </div>
         <div>
-          <h2 className="text-xl">Posts</h2>
           {isMe(userData.id) &&
-            (newPostText === undefined ? (
-              <button className="mr-2" onClick={() => setNewPostText("")}>
-                New Post
+            <div className="flex mb-4 flex-col">
+              <AutoResizeTextArea
+                placeholder="What's happening?"
+                value={newPostText}
+                onChange={(e) => setNewPostText(e.target.value)}
+                className="w-full p-2 bg-purple-900 rounded-md mb-2 h-fit resize-none placeholder-gray-200"
+              />
+              <button
+                className="self-end bg-purple-800 p-2 rounded-md font-bold disabled:opacity-70 hover:opacity-90"
+                disabled={newPostText.length === 0}
+                onClick={() => onClickPost(newPostText)}
+              >
+                Post
               </button>
-            ) : (
-              <>
-                <textarea
-                  value={newPostText}
-                  onChange={(e) => setNewPostText(e.target.value)}
-                />
-                <button
-                  className="mr-2"
-                  disabled={newPostText.length === 0}
-                  onClick={() => onClickPost(newPostText)}
-                >
-                  Post
-                </button>
-                <button
-                  className="mr-2"
-                  onClick={() => setNewPostText(undefined)}
-                >
-                  Cancel
-                </button>
-              </>
-            ))}
-          {(userData.posts ?? [])
-            .filter((p) => p.repliedToId === null)
-            .map((p) => (
-              <IndividualPost key={p.id} {...p} onUpdatePosts={onMutateUser} />
-            ))}
-          <h2 className="text-xl">Likes</h2>
-          {(userData.likes ?? []).map((p) => (
-            <IndividualPost key={p.id} {...p} onUpdatePosts={onMutateUser} />
-          ))}
-          <h2 className="text-xl">Following</h2>
-          {(userData.following ?? []).map((u) => (
-            <div key={u.id}>
-              <Link href={`/${userSlug(u)}`}>
-                {/* eslint-disable-next-line */}
-                <img
-                  className="inline w-10 rounded-full"
-                  src={u.image ?? ""}
-                  alt="profile picture"
-                />
-                <span className="mr-2">{u.name}</span>
-              </Link>
             </div>
-          ))}
-          <h2 className="text-xl">Followers</h2>
-          {(userData.followers ?? []).map((u) => (
-            <div key={u.id}>
-              <Link href={`/${userSlug(u)}`}>
-                {/* eslint-disable-next-line */}
-                <img
-                  className="inline w-10 rounded-full"
-                  src={u.image ?? ""}
-                  alt="profile picture"
-                />
-                <span className="mr-2">{u.name}</span>
-              </Link>
-            </div>
-          ))}
+          }
+          <div className="flex justify-between mb-2 font-bold">
+            <button
+              onClick={() => setPostPage('posts')}
+              className={postPage === 'posts' ? "underline" : ""}
+            >
+              Posts
+            </button>
+            <button
+              onClick={() => setPostPage('postsAndReplies')}
+              className={postPage === 'postsAndReplies' ? "underline" : ""}
+            >
+              Posts and Replies
+            </button>
+            <button
+              onClick={() => setPostPage('likes')}
+              className={postPage === 'likes' ? "underline" : ""}
+            >
+              Likes
+            </button>
+          </div>
+          {postPage === 'posts' ? (
+            <>
+              {(userData.posts ?? [])
+                .filter((p) => p.repliedToId === null)
+                .map((p) => (
+                  <PostCard key={p.id} post={p} onUpdatePosts={onMutateUser} />
+                ))}
+            </>
+          ) : postPage === 'postsAndReplies' ? (
+            <>
+              {(userData.posts ?? [])
+                .map((p) => (
+                  <PostCard key={p.id} post={p} onUpdatePosts={onMutateUser} />
+                ))}
+            </>
+          ) : postPage === 'likes' ? (
+            <>
+              {(userData.likes ?? []).map((p) => (
+                <PostCard key={p.id} post={p} onUpdatePosts={onMutateUser} />
+              ))}
+            </>
+          ) : <></>}
         </div>
-      </div>
+      </div >
     </>
   );
 };

@@ -4,6 +4,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import AutoResizeTextArea from "../../../components/AutoResizeTextArea";
 import { api } from "../../../utils/api";
 import { userSlug } from "../../../utils/models";
 
@@ -23,11 +24,21 @@ const PostPage = () => {
     },
   };
 
+  const [replyText, setReplyText] = useState<string>("");
+
+  const replyToPost = api.posts.replyTo.useMutation(onMutatePost);
+
+  const onClickPostReply = (repliedToId: string, text: string) => {
+    replyToPost.mutate({ repliedToId, text });
+    setReplyText("");
+  };
+
   if (post.status === "loading") {
     return <div>loading</div>;
   }
 
-  if (!post.data) {
+  const postData = post.data;
+  if (!postData) {
     return <div>@{postId} - no such post</div>;
   }
 
@@ -35,29 +46,31 @@ const PostPage = () => {
     <>
       <Head>
         <title>
-          {post.data.user.name} - {post.data.text}
+          {postData.user.name} - {postData.text}
         </title>
       </Head>
-      <div>
-        <Link href={`/${userSlug(post.data.user)}`}>
-          <div>
-            {/* eslint-disable-next-line */}
-            <img
-              className="rounded-full"
-              src={post.data.user.image ?? ""}
-              alt="profile picture"
-            />
-            <h1 className="text-3xl">{post.data.user.name}</h1>
-            <span className="text-gray-400">@{userSlug(post.data.user)}</span>
-          </div>
-        </Link>
-        <div>
-          <IndividualPost {...post.data} onUpdatePosts={onMutatePost} />
-          <h2 className="text-xl">Replies</h2>
-          {(post.data.replies ?? []).map((p) => (
-            <IndividualPost key={p.id} {...p} onUpdatePosts={onMutatePost} />
-          ))}
+      <div className="lg:w-1/2 mx-auto">
+        <PostCard post={postData} onUpdatePosts={onMutatePost} mainPost />
+        <div className="flex flex-col mb-4">
+          {replyText.length > 0 && <span>Replying to @{postData.user.name}</span>}
+          <AutoResizeTextArea
+            placeholder="Post your reply"
+            value={replyText}
+            onChange={(e) => setReplyText(e.target.value)}
+            className="w-full p-2 bg-purple-900 rounded-md mb-2 h-fit resize-none placeholder-gray-200"
+          />
+          <button
+            className="self-end bg-purple-800 p-2 rounded-md font-bold disabled:opacity-70 hover:opacity-90"
+            disabled={replyText.length === 0}
+            onClick={() => onClickPostReply(postData.id, replyText)}
+          >
+            Post Reply
+          </button>
         </div>
+        <h2 className="text-xl mb-2">Replies</h2>
+        {(postData.replies ?? []).map((p) => (
+          <PostCard key={p.id} post={p} onUpdatePosts={onMutatePost} />
+        ))}
       </div>
     </>
   );
@@ -65,33 +78,103 @@ const PostPage = () => {
 
 export default PostPage;
 
-export type PostProps = Post & {
-  user: User;
-  likes: User[];
-  reposts: Post[];
-  replies: Post[];
-  repost:
-  | (Post & {
+export type PostProps = {
+  post: Post & {
     user: User;
     likes: User[];
     reposts: Post[];
     replies: Post[];
-  })
-  | null;
+    repost:
+    | (Post & {
+      user: User;
+      likes: User[];
+      reposts: Post[];
+      replies: Post[];
+    })
+    | null;
+  };
+  mainPost?: boolean;
   onUpdatePosts: { onMutate: () => void };
 };
 
-export const IndividualPost: React.FC<PostProps> = ({
-  id,
-  userId,
-  user,
-  text,
-  likes,
-  reposts,
-  replies,
-  repost,
+export const PostCard: React.FC<PostProps> = (props) => {
+  const { post, onUpdatePosts } = props;
+
+  const session = useSession();
+
+  const isMe = (userId: string) => session.data?.user?.id === userId;
+
+  const [deleting, setDeleting] = useState(false);
+
+  const deletePost = api.posts.delete.useMutation(onUpdatePosts);
+
+  if (!post.text) {
+    if (!post.repost) {
+      return <>There was an error fetching the Repost.</>;
+    }
+    return (
+      <div className="border-b-purple-900 mb-2 pb-2 border-b-2 bg-purple-800 p-4 rounded-md">
+        <div className="text-sm ml-16">
+          <span className="mr-4">
+            <Link href={`/${userSlug(post.user)}`} >
+              {post.user.name} Reposted
+            </Link>
+          </span>
+          {isMe(post.user.id) && (deleting ? (
+            <>
+              <button
+                className="mr-2 text-red-600"
+                onClick={() => deletePost.mutate({ postId: post.id })}
+              >
+                Confirm
+              </button>
+              <button className="mr-2" onClick={() => setDeleting(false)}>
+                Cancel
+              </button>
+            </>
+          ) : (
+            <button className="mr-2" onClick={() => setDeleting(true)}>
+              Delete Repost
+            </button>
+          ))}
+        </div>
+        <IndividualPost {...props} post={post.repost} />
+      </div >
+    );
+  }
+  return (
+    <div className="border-b-purple-900 mb-2 pb-2 border-b-2 bg-purple-800 p-4 rounded-md">
+      <IndividualPost {...props} />
+    </div>
+  );
+}
+
+
+type IndividualPostProps = {
+  post: Post & {
+    user: User;
+    likes: User[];
+    reposts: Post[];
+    replies: Post[];
+  };
+  mainPost?: boolean;
+  onUpdatePosts: { onMutate: () => void };
+};
+
+const IndividualPost: React.FC<IndividualPostProps> = ({
+  post,
+  mainPost,
   onUpdatePosts,
 }) => {
+  const {
+    id,
+    userId,
+    user,
+    text,
+    likes,
+    reposts,
+    replies,
+  } = post;
   const session = useSession();
 
   const isMe = (userId: string) => session.data?.user?.id === userId;
@@ -120,157 +203,132 @@ export const IndividualPost: React.FC<PostProps> = ({
     setReplyText(undefined);
   };
 
-  if (!text) {
-    if (!repost) {
-      return <>There was an error fetching the Repost.</>;
-    }
-    return (
+  return (
+    <div className="flex">
       <div>
         <Link href={`/${userSlug(user)}`}>
           {/* eslint-disable-next-line */}
           <img
-            className="inline w-10 rounded-full"
+            className="inline w-14 rounded-full mr-2 border-2 border-purple-900"
             src={user.image ?? ""}
             alt="profile picture"
           />
-          <span className="mr-2">{user.name} Reposted:</span>
         </Link>
-        {isMe(user.id) &&
-          (deleting ? (
-            <>
-              <button
-                className="mr-2"
-                onClick={() => deletePost.mutate({ postId: id })}
-              >
-                Confirm
-              </button>
-              <button className="mr-2" onClick={() => setDeleting(false)}>
-                Cancel
-              </button>
-            </>
-          ) : (
-            <button className="mr-2" onClick={() => setDeleting(true)}>
-              Delete
-            </button>
-          ))}
-        <div className="ml-10">
-          <IndividualPost
-            {...repost}
-            repost={null}
-            onUpdatePosts={onUpdatePosts}
-          />
-        </div>
       </div>
-    );
-  }
-
-  return (
-    <div>
-      <Link href={`/${userSlug(user)}`}>
-        {/* eslint-disable-next-line */}
-        <img
-          className="inline w-10 rounded-full"
-          src={user.image ?? ""}
-          alt="profile picture"
-        />
-        <span className="mr-2">{user.name}:</span>
-      </Link>
-      <span className="mr-10">
-        {editingText ? (
-          <textarea
-            value={editingText}
-            onChange={(e) => setEditingText(e.target.value)}
-          />
-        ) : (
-          <Link href={`/${userSlug(user)}/posts/${id}`}>{text}</Link>
-        )}
-      </span>
-      {isMe(userId) && (
-        <>
+      <div className="flex-1">
+        <Link href={`/${userSlug(user)}`}>
+          <span className="mr-2 font-bold hover:underline">{user.name}</span>
+          <span className="mr-2 text-purple-400">
+            @{userSlug(user)}
+          </span>
+        </Link>
+        <div className="mb-2">
           {editingText ? (
             <>
-              <button
-                className="mr-2"
-                disabled={editingText.length === 0}
-                onClick={() => onConfirmEditingText(editingText)}
-              >
-                Confirm
-              </button>
-              <button
-                className="mr-2"
-                onClick={() => setEditingText(undefined)}
-              >
-                Cancel
-              </button>
+              <span>Editing Post...</span>
+              <AutoResizeTextArea
+                value={editingText}
+                onChange={(e) => setEditingText(e.target.value)}
+                className="w-full p-2 bg-purple-900 rounded-md mb-2 h-fit resize-none"
+              />
             </>
-          ) : (
-            <button className="mr-2" onClick={() => setEditingText(text)}>
-              Edit
-            </button>
-          )}
-          {deleting ? (
-            <>
-              <button
-                className="mr-2"
-                onClick={() => deletePost.mutate({ postId: id })}
-              >
-                Confirm
-              </button>
-              <button className="mr-2" onClick={() => setDeleting(false)}>
-                Cancel
-              </button>
-            </>
-          ) : (
-            <button className="mr-2" onClick={() => setDeleting(true)}>
-              Delete
-            </button>
-          )}
-        </>
-      )}
-      <>
-        <button className="mr-2" onClick={() => setReplyText("")}>
-          Reply {replies.length}
-        </button>
-        <button
-          className="mr-2"
-          onClick={() => repostPost.mutate({ repostId: id })}
-        >
-          Repost {reposts.length}
-        </button>
-        {iHaveLiked({ likes }) ? (
-          <button
-            className="mr-2"
-            onClick={() => unlikePost.mutate({ postId: id })}
-          >
-            Unlike {likes.length}
-          </button>
-        ) : (
-          <button
-            className="mr-2"
-            onClick={() => likePost.mutate({ postId: id })}
-          >
-            Like {likes.length}
-          </button>
-        )}
-      </>
-      {replyText !== undefined && (
-        <div>
-          <textarea
-            value={replyText}
-            onChange={(e) => setReplyText(e.target.value)}
-          />
-          <button
-            className="mr-2"
-            disabled={replyText.length === 0}
-            onClick={() => onClickPostReply(id, replyText)}
-          >
-            Post Reply
-          </button>
-          <button className="mr-2" onClick={() => setReplyText(undefined)}>
-            Cancel
-          </button>
+          ) :
+            mainPost ?
+              <span className="text-2xl">{text}</span> :
+              <Link href={`/${userSlug(user)}/posts/${id}`}>{text}</Link>
+          }
         </div>
-      )}
+        <div className="mb-2 font-bold">
+          {isMe(userId) && (
+            <>
+              {editingText ? (
+                <>
+                  <button
+                    className="mr-2"
+                    disabled={editingText.length === 0}
+                    onClick={() => onConfirmEditingText(editingText)}
+                  >
+                    Confirm
+                  </button>
+                  <button
+                    className="mr-2"
+                    onClick={() => setEditingText(undefined)}
+                  >
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <button className="mr-2" onClick={() => setEditingText(text ?? "")}>
+                  Edit
+                </button>
+              )}
+              {deleting ? (
+                <>
+                  <button
+                    className="mr-2 text-red-600"
+                    onClick={() => deletePost.mutate({ postId: id })}
+                  >
+                    Confirm
+                  </button>
+                  <button className="mr-2" onClick={() => setDeleting(false)}>
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <button className="mr-2" onClick={() => setDeleting(true)}>
+                  Delete
+                </button>
+              )}
+            </>
+          )}
+          <>
+            <button className="mr-2" onClick={() => setReplyText("")}>
+              Reply {replies.length}
+            </button>
+            <button
+              className="mr-2"
+              onClick={() => repostPost.mutate({ repostId: id })}
+            >
+              Repost {reposts.length}
+            </button>
+            {iHaveLiked({ likes }) ? (
+              <button
+                className="mr-2"
+                onClick={() => unlikePost.mutate({ postId: id })}
+              >
+                Unlike {likes.length}
+              </button>
+            ) : (
+              <button
+                className="mr-2"
+                onClick={() => likePost.mutate({ postId: id })}
+              >
+                Like {likes.length}
+              </button>
+            )}
+          </>
+        </div>
+        {replyText !== undefined && (
+          <div>
+            <span>Replying to @{user.name}</span>
+            <AutoResizeTextArea
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              className="w-full p-2 bg-purple-900 rounded-md mb-2 h-fit resize-none"
+            />
+            <button
+              className="mr-2"
+              disabled={replyText.length === 0}
+              onClick={() => onClickPostReply(id, replyText)}
+            >
+              Post Reply
+            </button>
+            <button className="mr-2" onClick={() => setReplyText(undefined)}>
+              Cancel
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
