@@ -79,7 +79,7 @@ const UserPage: NextPage = () => {
             src={userData.image ?? ""}
             alt="profile picture"
           />
-          <h1 className="text-3xl font-bold">{userData.name}</h1>
+          <h1 className="text-3xl font-bold mb-2">{userData.name}</h1>
           {newUsername === undefined && (
             <span className="mr-2 text-purple-400">@{userSlug(userData)}</span>
           )}
@@ -96,8 +96,9 @@ const UserPage: NextPage = () => {
                 </button>
               </>
             ) : (
-              <>
+              <div className="mb-2">
                 <input
+                  className="h-fit w-full resize-none rounded-md bg-purple-900 p-2 placeholder-gray-200"
                   value={newUsername}
                   onChange={(e) => setNewUsername(e.target.value)}
                 />
@@ -114,7 +115,7 @@ const UserPage: NextPage = () => {
                 >
                   Cancel
                 </button>
-              </>
+              </div>
             ))}
           {isMe(userData.id) ||
             (iAmFollowing(userData) ? (
