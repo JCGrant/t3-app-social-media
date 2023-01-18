@@ -1,7 +1,16 @@
 import { TRPCError } from "@trpc/server";
+import { S3 } from "aws-sdk";
+import { randomUUID } from "crypto";
 import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
+
+const s3 = new S3({
+  accessKeyId: process.env.S3_ACCESS_KEY_ID,
+  secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+  region: process.env.S3_REGION,
+  signatureVersion: 'v4',
+});
 
 export const postsRouter = createTRPCRouter({
   get: publicProcedure
@@ -18,6 +27,7 @@ export const postsRouter = createTRPCRouter({
         include: {
           user: true,
           likes: true,
+          attachments: true,
           replies: {
             orderBy: {
               createdAt: "desc",
@@ -25,10 +35,12 @@ export const postsRouter = createTRPCRouter({
             include: {
               user: true,
               likes: true,
+              attachments: true,
               repost: {
                 include: {
                   user: true,
                   likes: true,
+                  attachments: true,
                   replies: {
                     orderBy: {
                       createdAt: "desc",
@@ -58,6 +70,7 @@ export const postsRouter = createTRPCRouter({
             include: {
               user: true,
               likes: true,
+              attachments: true,
               replies: {
                 orderBy: {
                   createdAt: "desc",
@@ -97,6 +110,7 @@ export const postsRouter = createTRPCRouter({
       include: {
         user: true,
         likes: true,
+        attachments: true,
         replies: {
           orderBy: {
             createdAt: "desc",
@@ -104,10 +118,12 @@ export const postsRouter = createTRPCRouter({
           include: {
             user: true,
             likes: true,
+            attachments: true,
             repost: {
               include: {
                 user: true,
                 likes: true,
+                attachments: true,
                 replies: {
                   orderBy: {
                     createdAt: "desc",
@@ -137,6 +153,7 @@ export const postsRouter = createTRPCRouter({
           include: {
             user: true,
             likes: true,
+            attachments: true,
             replies: {
               orderBy: {
                 createdAt: "desc",
@@ -160,15 +177,44 @@ export const postsRouter = createTRPCRouter({
     .input(
       z.object({
         text: z.string(),
+        files: z.array(z.object({
+          name: z.string(),
+          type: z.string(),
+        })),
       })
     )
-    .mutation(({ ctx, input }) => {
-      return ctx.prisma.post.create({
-        data: {
-          userId: ctx.session.user.id,
-          text: input.text,
-        },
+    .mutation(async ({ ctx, input }) => {
+      const filesParams = input.files.map(({ type }) => {
+        const key = randomUUID();
+        return {
+          fileParams: {
+            Bucket: process.env.S3_BUCKET,
+            Key: key,
+            Expires: 600,
+            ContentType: type,
+            ACL: 'public-read',
+          },
+          key
+        }
       });
+      const presignedURLs = await Promise.all(
+        filesParams.map(async ({ fileParams, key }) => ({
+          url: await s3.getSignedUrlPromise('putObject', fileParams),
+          key
+        }))
+      );
+      return {
+        post: await ctx.prisma.post.create({
+          data: {
+            userId: ctx.session.user.id,
+            text: input.text,
+            attachments: {
+              create: presignedURLs.map(({ key }) => ({ hash: key }))
+            }
+          },
+        }),
+        presignedURLs,
+      };
     }),
 
   replyTo: protectedProcedure

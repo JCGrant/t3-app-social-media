@@ -21,9 +21,10 @@ model Example {
 }
 
 model Post {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String       @id @default(cuid())
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  attachments Attachment[]
 
   userId String
   user   User   @relation("UserPosts", fields: [userId], references: [id])
@@ -39,6 +40,14 @@ model Post {
   repliedToId String?
   repliedTo   Post?   @relation("PostReplies", fields: [repliedToId], references: [id])
   replies     Post[]  @relation("PostReplies")
+}
+
+model Attachment {
+  id   String @id @default(cuid())
+  hash String
+
+  postId String?
+  Post   Post?   @relation(fields: [postId], references: [id])
 }
 
 // Necessary for Next auth

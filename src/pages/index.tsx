@@ -7,6 +7,11 @@ import AutoResizeTextArea from "../components/AutoResizeTextArea";
 import { api } from "../utils/api";
 import { PostCard } from "./[userId]/posts/[postId]";
 
+type NewPost = {
+  text: string;
+  files: File[];
+}
+
 const Home: NextPage = () => {
   const session = useSession();
   const timeline = api.posts.timeline.useQuery();
@@ -17,13 +22,36 @@ const Home: NextPage = () => {
     },
   };
 
-  const createPost = api.posts.create.useMutation(onMutateTimeline);
+  const createPost = api.posts.create.useMutation({
+    onMutate() {
+      setTimeout(() => void timeline.refetch(), 1000);
+    },
+    async onSuccess({ presignedURLs }) {
+      await Promise.all(presignedURLs.map(({ url }, i) => {
+        const file = newPost.files[i];
+        if (!file) {
+          return;
+        }
+        return fetch(url, {
+          method: 'PUT',
+          body: file,
+          headers: {
+            'Content-Type': file.type,
+            'x-amz-acl': 'public-read'
+          }
+        })
+      }));
+    }
+  });
 
-  const [newPostText, setNewPostText] = useState<string>("");
+  const [newPost, setNewPost] = useState<NewPost>({ text: "", files: [] });
 
-  const onClickPost = (text: string) => {
-    createPost.mutate({ text });
-    setNewPostText("");
+  const onClickPost = (newPost: NewPost) => {
+    createPost.mutate({
+      text: newPost.text,
+      files: newPost.files.map(f => ({ name: f.name, type: f.type })),
+    });
+    setNewPost({ text: "", files: [] });
   };
 
   if (!session.data || timeline.status === "loading") {
@@ -41,20 +69,29 @@ const Home: NextPage = () => {
       </Head>
       <div className="lg:w-1/2 mx-auto">
         <h1 className="text-3xl mb-4">Home</h1>
-        <div className="flex mb-4 flex-col">
+        <div className="mb-4">
           <AutoResizeTextArea
             placeholder="What's happening?"
-            value={newPostText}
-            onChange={(e) => setNewPostText(e.target.value)}
+            value={newPost.text}
+            onChange={(e) => setNewPost({ ...newPost, text: e.target.value })}
             className="w-full p-2 bg-purple-900 rounded-md mb-2 h-fit resize-none placeholder-gray-200"
           />
-          <button
-            className="self-end bg-purple-800 p-2 rounded-md font-bold disabled:opacity-70 hover:opacity-90"
-            disabled={newPostText.length === 0}
-            onClick={() => onClickPost(newPostText)}
-          >
-            Post
-          </button>
+          <div className="flex justify-between">
+            <input
+              type='file'
+              onChange={(e) => setNewPost({
+                ...newPost,
+                files: e.target.files ? Array.from(e.target.files) : [],
+              })}
+            />
+            <button
+              className="self-end bg-purple-800 p-2 rounded-md font-bold disabled:opacity-70 hover:opacity-90"
+              disabled={newPost.text.length === 0 && newPost.files.length === 0}
+              onClick={() => onClickPost(newPost)}
+            >
+              Post
+            </button>
+          </div>
         </div>
         {timeline.data
           .filter((p) => p.repliedToId === null)

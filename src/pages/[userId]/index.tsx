@@ -40,7 +40,7 @@ const UserPage: NextPage = () => {
   const [newPostText, setNewPostText] = useState<string>("");
 
   const onClickPost = (text: string) => {
-    createPost.mutate({ text });
+    createPost.mutate({ text, files: [] });
     setNewPostText("");
   };
 

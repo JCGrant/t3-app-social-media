@@ -1,4 +1,4 @@
-import { type User, type Post } from "@prisma/client";
+import { type User, type Post, type Attachment } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
@@ -82,12 +82,14 @@ export type PostProps = {
   post: Post & {
     user: User;
     likes: User[];
+    attachments: Attachment[];
     reposts: Post[];
     replies: Post[];
     repost:
     | (Post & {
       user: User;
       likes: User[];
+      attachments: Attachment[];
       reposts: Post[];
       replies: Post[];
     })
@@ -108,8 +110,8 @@ export const PostCard: React.FC<PostProps> = (props) => {
 
   const deletePost = api.posts.delete.useMutation(onUpdatePosts);
 
-  if (!post.text) {
-    if (!post.repost) {
+  if (post.text === null) {
+    if (post.repost === null) {
       return <>There was an error fetching the Repost.</>;
     }
     return (
@@ -154,6 +156,7 @@ type IndividualPostProps = {
   post: Post & {
     user: User;
     likes: User[];
+    attachments: Attachment[];
     reposts: Post[];
     replies: Post[];
   };
@@ -172,6 +175,7 @@ const IndividualPost: React.FC<IndividualPostProps> = ({
     user,
     text,
     likes,
+    attachments,
     reposts,
     replies,
   } = post;
@@ -223,7 +227,7 @@ const IndividualPost: React.FC<IndividualPostProps> = ({
           </span>
         </Link>
         <div className="mb-2">
-          {editingText ? (
+          {editingText !== undefined ? (
             <>
               <span>Editing Post...</span>
               <AutoResizeTextArea
@@ -237,6 +241,14 @@ const IndividualPost: React.FC<IndividualPostProps> = ({
               <span className="text-2xl">{text}</span> :
               <Link href={`/${userSlug(user)}/posts/${id}`}>{text}</Link>
           }
+        </div>
+        <div>
+          {attachments.map(a => (
+            <div key={a.id}>
+              {/* eslint-disable-next-line */}
+              <img src={`https://t3-app-social-media-files.s3.eu-west-2.amazonaws.com/${a.hash}`} />
+            </div>
+          ))}
         </div>
         <div className="mb-2 font-bold">
           {isMe(userId) && (
@@ -329,6 +341,6 @@ const IndividualPost: React.FC<IndividualPostProps> = ({
           </div>
         )}
       </div>
-    </div>
+    </div >
   );
 };

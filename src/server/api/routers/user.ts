@@ -22,6 +22,7 @@ export const userRouter = createTRPCRouter({
             include: {
               user: true,
               likes: true,
+              attachments: true,
               replies: {
                 orderBy: {
                   createdAt: "desc",
@@ -36,6 +37,7 @@ export const userRouter = createTRPCRouter({
                 include: {
                   user: true,
                   likes: true,
+                  attachments: true,
                   replies: {
                     orderBy: {
                       createdAt: "desc",
@@ -59,6 +61,7 @@ export const userRouter = createTRPCRouter({
             include: {
               user: true,
               likes: true,
+              attachments: true,
               replies: {
                 orderBy: {
                   createdAt: "desc",
@@ -73,6 +76,7 @@ export const userRouter = createTRPCRouter({
                 include: {
                   user: true,
                   likes: true,
+                  attachments: true,
                   replies: {
                     orderBy: {
                       createdAt: "desc",
@@ -106,6 +110,7 @@ export const userRouter = createTRPCRouter({
             include: {
               user: true,
               likes: true,
+              attachments: true,
               replies: {
                 orderBy: {
                   createdAt: "desc",
@@ -120,6 +125,7 @@ export const userRouter = createTRPCRouter({
                 include: {
                   user: true,
                   likes: true,
+                  attachments: true,
                   replies: {
                     orderBy: {
                       createdAt: "desc",
@@ -143,6 +149,7 @@ export const userRouter = createTRPCRouter({
             include: {
               user: true,
               likes: true,
+              attachments: true,
               replies: {
                 orderBy: {
                   createdAt: "desc",
@@ -157,6 +164,7 @@ export const userRouter = createTRPCRouter({
                 include: {
                   user: true,
                   likes: true,
+                  attachments: true,
                   replies: {
                     orderBy: {
                       createdAt: "desc",
