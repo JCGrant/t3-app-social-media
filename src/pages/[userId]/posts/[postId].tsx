@@ -49,25 +49,27 @@ const PostPage = () => {
           {postData.user.name} - {postData.text}
         </title>
       </Head>
-      <div className="lg:w-1/2 mx-auto">
+      <div className="mx-auto lg:w-1/2">
         <PostCard post={postData} onUpdatePosts={onMutatePost} mainPost />
-        <div className="flex flex-col mb-4">
-          {replyText.length > 0 && <span>Replying to @{postData.user.name}</span>}
+        <div className="mb-4 flex flex-col">
+          {replyText.length > 0 && (
+            <span>Replying to @{postData.user.name}</span>
+          )}
           <AutoResizeTextArea
             placeholder="Post your reply"
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
-            className="w-full p-2 bg-purple-900 rounded-md mb-2 h-fit resize-none placeholder-gray-200"
+            className="mb-2 h-fit w-full resize-none rounded-md bg-purple-900 p-2 placeholder-gray-200"
           />
           <button
-            className="self-end bg-purple-800 p-2 rounded-md font-bold disabled:opacity-70 hover:opacity-90"
+            className="self-end rounded-md bg-purple-800 p-2 font-bold hover:opacity-90 disabled:opacity-70"
             disabled={replyText.length === 0}
             onClick={() => onClickPostReply(postData.id, replyText)}
           >
             Post Reply
           </button>
         </div>
-        <h2 className="text-xl mb-2">Replies</h2>
+        <h2 className="mb-2 text-xl">Replies</h2>
         {(postData.replies ?? []).map((p) => (
           <PostCard key={p.id} post={p} onUpdatePosts={onMutatePost} />
         ))}
@@ -115,42 +117,42 @@ export const PostCard: React.FC<PostProps> = (props) => {
       return <>There was an error fetching the Repost.</>;
     }
     return (
-      <div className="border-b-purple-900 mb-2 pb-2 border-b-2 bg-purple-800 p-4 rounded-md">
-        <div className="text-sm ml-16">
+      <div className="mb-2 rounded-md border-b-2 border-b-purple-900 bg-purple-800 p-4 pb-2">
+        <div className="ml-16 text-sm">
           <span className="mr-4">
-            <Link href={`/${userSlug(post.user)}`} >
+            <Link href={`/${userSlug(post.user)}`}>
               {post.user.name} Reposted
             </Link>
           </span>
-          {isMe(post.user.id) && (deleting ? (
-            <>
-              <button
-                className="mr-2 text-red-600"
-                onClick={() => deletePost.mutate({ postId: post.id })}
-              >
-                Confirm
+          {isMe(post.user.id) &&
+            (deleting ? (
+              <>
+                <button
+                  className="mr-2 text-red-600"
+                  onClick={() => deletePost.mutate({ postId: post.id })}
+                >
+                  Confirm
+                </button>
+                <button className="mr-2" onClick={() => setDeleting(false)}>
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <button className="mr-2" onClick={() => setDeleting(true)}>
+                Delete Repost
               </button>
-              <button className="mr-2" onClick={() => setDeleting(false)}>
-                Cancel
-              </button>
-            </>
-          ) : (
-            <button className="mr-2" onClick={() => setDeleting(true)}>
-              Delete Repost
-            </button>
-          ))}
+            ))}
         </div>
         <IndividualPost {...props} post={post.repost} />
-      </div >
+      </div>
     );
   }
   return (
-    <div className="border-b-purple-900 mb-2 pb-2 border-b-2 bg-purple-800 p-4 rounded-md">
+    <div className="mb-2 rounded-md border-b-2 border-b-purple-900 bg-purple-800 p-4 pb-2">
       <IndividualPost {...props} />
     </div>
   );
-}
-
+};
 
 type IndividualPostProps = {
   post: Post & {
@@ -169,16 +171,7 @@ const IndividualPost: React.FC<IndividualPostProps> = ({
   mainPost,
   onUpdatePosts,
 }) => {
-  const {
-    id,
-    userId,
-    user,
-    text,
-    likes,
-    attachments,
-    reposts,
-    replies,
-  } = post;
+  const { id, userId, user, text, likes, attachments, reposts, replies } = post;
   const session = useSession();
 
   const isMe = (userId: string) => session.data?.user?.id === userId;
@@ -213,7 +206,7 @@ const IndividualPost: React.FC<IndividualPostProps> = ({
         <Link href={`/${userSlug(user)}`}>
           {/* eslint-disable-next-line */}
           <img
-            className="inline w-14 rounded-full mr-2 border-2 border-purple-900"
+            className="mr-2 inline w-14 rounded-full border-2 border-purple-900"
             src={user.image ?? ""}
             alt="profile picture"
           />
@@ -222,9 +215,7 @@ const IndividualPost: React.FC<IndividualPostProps> = ({
       <div className="flex-1">
         <Link href={`/${userSlug(user)}`}>
           <span className="mr-2 font-bold hover:underline">{user.name}</span>
-          <span className="mr-2 text-purple-400">
-            @{userSlug(user)}
-          </span>
+          <span className="mr-2 text-purple-400">@{userSlug(user)}</span>
         </Link>
         <div className="mb-2">
           {editingText !== undefined ? (
@@ -233,20 +224,22 @@ const IndividualPost: React.FC<IndividualPostProps> = ({
               <AutoResizeTextArea
                 value={editingText}
                 onChange={(e) => setEditingText(e.target.value)}
-                className="w-full p-2 bg-purple-900 rounded-md mb-2 h-fit resize-none"
+                className="mb-2 h-fit w-full resize-none rounded-md bg-purple-900 p-2"
               />
             </>
-          ) :
-            mainPost ?
-              <span className="text-2xl">{text}</span> :
-              <Link href={`/${userSlug(user)}/posts/${id}`}>{text}</Link>
-          }
+          ) : mainPost ? (
+            <span className="text-2xl">{text}</span>
+          ) : (
+            <Link href={`/${userSlug(user)}/posts/${id}`}>{text}</Link>
+          )}
         </div>
         <div>
-          {attachments.map(a => (
+          {attachments.map((a) => (
             <div key={a.id}>
               {/* eslint-disable-next-line */}
-              <img src={`https://t3-app-social-media-files.s3.eu-west-2.amazonaws.com/${a.hash}`} />
+              <img
+                src={`https://t3-app-social-media-files.s3.eu-west-2.amazonaws.com/${a.hash}`}
+              />
             </div>
           ))}
         </div>
@@ -270,7 +263,10 @@ const IndividualPost: React.FC<IndividualPostProps> = ({
                   </button>
                 </>
               ) : (
-                <button className="mr-2" onClick={() => setEditingText(text ?? "")}>
+                <button
+                  className="mr-2"
+                  onClick={() => setEditingText(text ?? "")}
+                >
                   Edit
                 </button>
               )}
@@ -326,7 +322,7 @@ const IndividualPost: React.FC<IndividualPostProps> = ({
             <AutoResizeTextArea
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
-              className="w-full p-2 bg-purple-900 rounded-md mb-2 h-fit resize-none"
+              className="mb-2 h-fit w-full resize-none rounded-md bg-purple-900 p-2"
             />
             <button
               className="mr-2"
@@ -341,6 +337,6 @@ const IndividualPost: React.FC<IndividualPostProps> = ({
           </div>
         )}
       </div>
-    </div >
+    </div>
   );
 };

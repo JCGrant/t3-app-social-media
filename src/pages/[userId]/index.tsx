@@ -52,7 +52,9 @@ const UserPage: NextPage = () => {
     window.location.href = `/${newUsername}`;
   };
 
-  const [postPage, setPostPage] = useState<'posts' | 'postsAndReplies' | 'likes'>('posts');
+  const [postPage, setPostPage] = useState<
+    "posts" | "postsAndReplies" | "likes"
+  >("posts");
 
   if (user.status === "loading") {
     return <div>loading</div>;
@@ -69,7 +71,7 @@ const UserPage: NextPage = () => {
       <Head>
         <title>{userData.name}</title>
       </Head>
-      <div className="lg:w-1/2 mx-auto">
+      <div className="mx-auto lg:w-1/2">
         <div className="mb-4">
           {/* eslint-disable-next-line */}
           <img
@@ -79,9 +81,7 @@ const UserPage: NextPage = () => {
           />
           <h1 className="text-3xl font-bold">{userData.name}</h1>
           {newUsername === undefined && (
-            <span className="mr-2 text-purple-400">
-              @{userSlug(userData)}
-            </span>
+            <span className="mr-2 text-purple-400">@{userSlug(userData)}</span>
           )}
           {isMe(userData.id) &&
             (newUsername === undefined ? (
@@ -133,55 +133,57 @@ const UserPage: NextPage = () => {
           <div>
             <span className="mr-8 hover:underline">
               <Link href={`/${userSlug(userData)}/following`}>
-                <span className="font-bold">{userData.following.length}</span> Following
+                <span className="font-bold">{userData.following.length}</span>{" "}
+                Following
               </Link>
             </span>
             <span className="hover:underline">
               <Link href={`/${userSlug(userData)}/followers`}>
-                <span className="font-bold">{userData.followers.length}</span> Followers
+                <span className="font-bold">{userData.followers.length}</span>{" "}
+                Followers
               </Link>
             </span>
           </div>
         </div>
         <div>
-          {isMe(userData.id) &&
-            <div className="flex mb-4 flex-col">
+          {isMe(userData.id) && (
+            <div className="mb-4 flex flex-col">
               <AutoResizeTextArea
                 placeholder="What's happening?"
                 value={newPostText}
                 onChange={(e) => setNewPostText(e.target.value)}
-                className="w-full p-2 bg-purple-900 rounded-md mb-2 h-fit resize-none placeholder-gray-200"
+                className="mb-2 h-fit w-full resize-none rounded-md bg-purple-900 p-2 placeholder-gray-200"
               />
               <button
-                className="self-end bg-purple-800 p-2 rounded-md font-bold disabled:opacity-70 hover:opacity-90"
+                className="self-end rounded-md bg-purple-800 p-2 font-bold hover:opacity-90 disabled:opacity-70"
                 disabled={newPostText.length === 0}
                 onClick={() => onClickPost(newPostText)}
               >
                 Post
               </button>
             </div>
-          }
-          <div className="flex justify-between mb-2 font-bold">
+          )}
+          <div className="mb-2 flex justify-between font-bold">
             <button
-              onClick={() => setPostPage('posts')}
-              className={postPage === 'posts' ? "underline" : ""}
+              onClick={() => setPostPage("posts")}
+              className={postPage === "posts" ? "underline" : ""}
             >
               Posts
             </button>
             <button
-              onClick={() => setPostPage('postsAndReplies')}
-              className={postPage === 'postsAndReplies' ? "underline" : ""}
+              onClick={() => setPostPage("postsAndReplies")}
+              className={postPage === "postsAndReplies" ? "underline" : ""}
             >
               Posts and Replies
             </button>
             <button
-              onClick={() => setPostPage('likes')}
-              className={postPage === 'likes' ? "underline" : ""}
+              onClick={() => setPostPage("likes")}
+              className={postPage === "likes" ? "underline" : ""}
             >
               Likes
             </button>
           </div>
-          {postPage === 'posts' ? (
+          {postPage === "posts" ? (
             <>
               {(userData.posts ?? [])
                 .filter((p) => p.repliedToId === null)
@@ -189,22 +191,23 @@ const UserPage: NextPage = () => {
                   <PostCard key={p.id} post={p} onUpdatePosts={onMutateUser} />
                 ))}
             </>
-          ) : postPage === 'postsAndReplies' ? (
+          ) : postPage === "postsAndReplies" ? (
             <>
-              {(userData.posts ?? [])
-                .map((p) => (
-                  <PostCard key={p.id} post={p} onUpdatePosts={onMutateUser} />
-                ))}
+              {(userData.posts ?? []).map((p) => (
+                <PostCard key={p.id} post={p} onUpdatePosts={onMutateUser} />
+              ))}
             </>
-          ) : postPage === 'likes' ? (
+          ) : postPage === "likes" ? (
             <>
               {(userData.likes ?? []).map((p) => (
                 <PostCard key={p.id} post={p} onUpdatePosts={onMutateUser} />
               ))}
             </>
-          ) : <></>}
+          ) : (
+            <></>
+          )}
         </div>
-      </div >
+      </div>
     </>
   );
 };

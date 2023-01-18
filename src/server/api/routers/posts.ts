@@ -9,7 +9,7 @@ const s3 = new S3({
   accessKeyId: process.env.S3_ACCESS_KEY_ID,
   secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
   region: process.env.S3_REGION,
-  signatureVersion: 'v4',
+  signatureVersion: "v4",
 });
 
 export const postsRouter = createTRPCRouter({
@@ -177,10 +177,12 @@ export const postsRouter = createTRPCRouter({
     .input(
       z.object({
         text: z.string(),
-        files: z.array(z.object({
-          name: z.string(),
-          type: z.string(),
-        })),
+        files: z.array(
+          z.object({
+            name: z.string(),
+            type: z.string(),
+          })
+        ),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -192,15 +194,15 @@ export const postsRouter = createTRPCRouter({
             Key: key,
             Expires: 600,
             ContentType: type,
-            ACL: 'public-read',
+            ACL: "public-read",
           },
-          key
-        }
+          key,
+        };
       });
       const presignedURLs = await Promise.all(
         filesParams.map(async ({ fileParams, key }) => ({
-          url: await s3.getSignedUrlPromise('putObject', fileParams),
-          key
+          url: await s3.getSignedUrlPromise("putObject", fileParams),
+          key,
         }))
       );
       return {
@@ -209,8 +211,8 @@ export const postsRouter = createTRPCRouter({
             userId: ctx.session.user.id,
             text: input.text,
             attachments: {
-              create: presignedURLs.map(({ key }) => ({ hash: key }))
-            }
+              create: presignedURLs.map(({ key }) => ({ hash: key })),
+            },
           },
         }),
         presignedURLs,

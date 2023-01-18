@@ -9,11 +9,9 @@ type LayoutProps = {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <div className="bg-purple-700 min-h-screen text-white">
+    <div className="min-h-screen bg-purple-700 text-white">
       <Navbar />
-      <main className="px-8 mt-4">
-        {children}
-      </main>
+      <main className="mt-4 px-8">{children}</main>
     </div>
   );
 };
@@ -31,11 +29,11 @@ const Navbar = () => {
   );
 
   if (!user.data) {
-    return <></>
+    return <></>;
   }
 
   return (
-    <div className="text-xl flex justify-between bg-purple-800 h-20 items-center p-8">
+    <div className="flex h-20 items-center justify-between bg-purple-800 p-8 text-xl">
       <span>
         <Link href="/" className="mr-2 text-3xl">
           Postr
@@ -47,19 +45,12 @@ const Navbar = () => {
             <Link href={`/${userSlug(user.data)}`} className="mr-2">
               Profile
             </Link>
-            <button
-              onClick={() => void signOut()}
-            >
-              Sign out
-            </button>
+            <button onClick={() => void signOut()}>Sign out</button>
           </>
         ) : (
-          <button
-            onClick={() => void signIn()}
-          >
-            Sign in
-          </button>
+          <button onClick={() => void signIn()}>Sign in</button>
         )}
       </span>
-    </div>)
-}
+    </div>
+  );
+};

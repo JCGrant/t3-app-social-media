@@ -1,6 +1,6 @@
 import { useRef } from "react";
 
-type TextAreaProps = React.ComponentProps<'textarea'>
+type TextAreaProps = React.ComponentProps<"textarea">;
 
 const AutoResizeTextArea: React.FC<TextAreaProps> = (props) => {
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -11,17 +11,11 @@ const AutoResizeTextArea: React.FC<TextAreaProps> = (props) => {
     }
     const currentRef = ref.current;
     if (currentRef) {
-      currentRef.style.height = `${currentRef.scrollHeight}px`
+      currentRef.style.height = `${currentRef.scrollHeight}px`;
     }
-  }
+  };
 
-  return (
-    <textarea
-      ref={ref}
-      {...props}
-      onChange={onChangeValue}
-    />
-  )
-}
+  return <textarea ref={ref} {...props} onChange={onChangeValue} />;
+};
 
 export default AutoResizeTextArea;

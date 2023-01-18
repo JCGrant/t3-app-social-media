@@ -7,14 +7,14 @@ import { api } from "../../utils/api";
 import { userSlug } from "../../utils/models";
 
 const FollowersPage = () => {
-  return <UserListPage relationship="followers" />
-}
+  return <UserListPage relationship="followers" />;
+};
 
 export default FollowersPage;
 
 export type UserListProps = {
-  relationship: 'followers' | 'following';
-}
+  relationship: "followers" | "following";
+};
 
 export const UserListPage: React.FC<UserListProps> = ({ relationship }) => {
   const router = useRouter();
@@ -53,37 +53,31 @@ export const UserListPage: React.FC<UserListProps> = ({ relationship }) => {
         <title>{userData.name} Followers</title>
       </Head>
       <Link href={`/${userSlug(userData)}`}>
-        <div className="flex items-center hover:opacity-90 mb-4">
-          <div className="text-2xl mr-4 font-bold">
-            {"<-"}
-          </div>
+        <div className="mb-4 flex items-center hover:opacity-90">
+          <div className="mr-4 text-2xl font-bold">{"<-"}</div>
           <div>
             <h1 className="text-3xl font-bold">{userData.name}</h1>
-            <span className="mr-2 text-purple-400">
-              @{userSlug(userData)}
-            </span>
+            <span className="mr-2 text-purple-400">@{userSlug(userData)}</span>
           </div>
         </div>
       </Link>
-      <div className="lg:w-1/2 mx-auto">
+      <div className="mx-auto lg:w-1/2">
         {(userData[relationship] ?? []).map((u) => (
-          <div key={u.id} >
-            <div className="flex justify-between items-center bg-purple-800 p-2 rounded-md hover:opacity-90">
+          <div key={u.id}>
+            <div className="flex items-center justify-between rounded-md bg-purple-800 p-2 hover:opacity-90">
               <Link href={`/${userSlug(u)}`}>
                 <div className="flex">
                   <div>
                     {/* eslint-disable-next-line */}
                     <img
-                      className="inline w-14 rounded-full mr-2 border-2 border-purple-900"
+                      className="mr-2 inline w-14 rounded-full border-2 border-purple-900"
                       src={u.image ?? ""}
                       alt="profile picture"
                     />
                   </div>
                   <div className="flex flex-col">
                     <span className="mr-2">{u.name}</span>
-                    <span className="mr-2 text-purple-400">
-                      @{userSlug(u)}
-                    </span>
+                    <span className="mr-2 text-purple-400">@{userSlug(u)}</span>
                   </div>
                 </div>
               </Link>
@@ -96,9 +90,7 @@ export const UserListPage: React.FC<UserListProps> = ({ relationship }) => {
                       Unfollow
                     </button>
                   ) : (
-                    <button
-                      onClick={() => followUser.mutate({ userId: u.id })}
-                    >
+                    <button onClick={() => followUser.mutate({ userId: u.id })}>
                       Follow
                     </button>
                   ))}
@@ -108,5 +100,5 @@ export const UserListPage: React.FC<UserListProps> = ({ relationship }) => {
         ))}
       </div>
     </>
-  )
-}
+  );
+};
