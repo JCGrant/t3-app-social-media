@@ -28,10 +28,6 @@ const Navbar = () => {
     { enabled: userId !== undefined }
   );
 
-  if (!user.data) {
-    return <></>;
-  }
-
   return (
     <div className="flex h-20 items-center justify-between bg-purple-800 p-8 text-xl">
       <span>
@@ -40,13 +36,13 @@ const Navbar = () => {
         </Link>
       </span>
       <span>
-        {session.data?.user ? (
-          <>
-            <Link href={`/${userSlug(user.data)}`} className="mr-2">
-              Profile
-            </Link>
-            <button onClick={() => void signOut()}>Sign out</button>
-          </>
+        {user.data && (
+          <Link href={`/${userSlug(user.data)}`} className="mr-2">
+            Profile
+          </Link>
+        )}
+        {session.data ? (
+          <button onClick={() => void signOut()}>Sign out</button>
         ) : (
           <button onClick={() => void signIn()}>Sign in</button>
         )}
