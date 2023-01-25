@@ -1,10 +1,12 @@
 import { type NextPage } from "next";
 import { useSession } from "next-auth/react";
 import Head from "next/head";
-import { useState } from "react";
+import Link from "next/link";
+import { useRef, useState } from "react";
 import AutoResizeTextArea from "../components/AutoResizeTextArea";
 
 import { api } from "../utils/api";
+import { userSlug } from "../utils/models";
 import { PostCard } from "./[userId]/posts/[postId]";
 
 type NewPost = {
@@ -16,16 +18,15 @@ const Home: NextPage = () => {
   const session = useSession();
   const timeline = api.posts.timeline.useQuery();
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const onMutateTimeline = {
-    onMutate() {
-      setTimeout(() => void timeline.refetch(), 300);
+    onSuccess() {
+      void timeline.refetch()
     },
   };
 
   const createPost = api.posts.create.useMutation({
-    onMutate() {
-      setTimeout(() => void timeline.refetch(), 1000);
-    },
     async onSuccess({ presignedURLs }) {
       await Promise.all(
         presignedURLs.map(({ url }, i) => {
@@ -43,6 +44,7 @@ const Home: NextPage = () => {
           });
         })
       );
+      void timeline.refetch();
     },
   });
 
@@ -54,6 +56,9 @@ const Home: NextPage = () => {
       files: newPost.files.map((f) => ({ name: f.name, type: f.type })),
     });
     setNewPost({ text: "", files: [] });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
   };
 
   if (!session.data || timeline.status === "loading") {
@@ -80,6 +85,7 @@ const Home: NextPage = () => {
           />
           <div className="flex justify-between">
             <input
+              ref={fileInputRef}
               type="file"
               onChange={(e) =>
                 setNewPost({
@@ -97,6 +103,11 @@ const Home: NextPage = () => {
             </button>
           </div>
         </div>
+        {createPost.isLoading && (
+          <div className="mb-2 rounded-md border-b-2 border-b-purple-900 bg-purple-800 p-4 pb-2">
+            Creating Post...
+          </div>
+        )}
         {timeline.data
           .filter((p) => p.repliedToId === null)
           .map((p) => (

@@ -19,8 +19,8 @@ const PostPage = () => {
   );
 
   const onMutatePost = {
-    onMutate() {
-      setTimeout(() => void post.refetch(), 300);
+    onSuccess() {
+      void post.refetch();
     },
   };
 
@@ -98,7 +98,7 @@ export type PostProps = {
     | null;
   };
   mainPost?: boolean;
-  onUpdatePosts: { onMutate: () => void };
+  onUpdatePosts: { onSuccess: () => void };
 };
 
 export const PostCard: React.FC<PostProps> = (props) => {
@@ -163,7 +163,7 @@ type IndividualPostProps = {
     replies: Post[];
   };
   mainPost?: boolean;
-  onUpdatePosts: { onMutate: () => void };
+  onUpdatePosts: { onSuccess: () => void };
 };
 
 const IndividualPost: React.FC<IndividualPostProps> = ({

@@ -27,8 +27,8 @@ const UserPage: NextPage = () => {
     user.followers.some((u) => u.id === session.data?.user?.id);
 
   const onMutateUser = {
-    onMutate() {
-      setTimeout(() => void user.refetch(), 300);
+    onSuccess() {
+      void user.refetch();
     },
   };
 

@@ -33,8 +33,8 @@ export const UserListPage: React.FC<UserListProps> = ({ relationship }) => {
     user.data?.followers.some((u) => u.id === other.id);
 
   const onMutateUser = {
-    onMutate() {
-      setTimeout(() => void user.refetch(), 300);
+    onSuccess() {
+      void user.refetch();
     },
   };
 
